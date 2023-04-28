@@ -13,53 +13,99 @@ export default class docsInteractions {
     })
   }
 
-  public static pressKey(key: Keys, opts: keyboardOpts = {}, repeat = 1): typeof docsInteractions {
+  public static setCursorWidth(width: string, isInsertMode?: boolean) {
+    const cursor = this.getUserCursor
+
+    if (cursor === null) return false
+    const caret = cursor.querySelector('.kix-cursor-caret') as HTMLElement
+
+    caret.style.borderWidth = width
+    const cursorColor = `rgba(${isInsertMode ? 0 : 255}, 0, 0, ${isInsertMode ? 1 : 0.5})`
+    caret.style.setProperty('border-color', cursorColor, 'important')
+    caret.style.mixBlendMode = 'difference'
+    return true
+  }
+
+  static get getUserCursor(): Element | null {
+    let cursor: Element | null = null
+
+    document.querySelectorAll('.kix-cursor').forEach((el) => {
+      const caretColor = el.querySelector('.kix-cursor-caret')
+      if (caretColor === null) return
+
+      const cursorName = (el.querySelector('.kix-cursor-name')?.textContent ?? '').trim()
+
+      if (cursorName.length <= 0) cursor = el
+    })
+    if (cursor !== null) return cursor
+
+    return document.querySelector('.kix-cursor')
+  }
+
+  private static readonly keyMapper = {
+    ArrowUp: 38,
+    ArrowDown: 40,
+    ArrowLeft: 37,
+    ArrowRight: 39,
+    Enter: 13,
+  } as const
+
+  public static pressKey(
+    key: keyof Keys,
+    opts: keyboardOpts = { mac: GLOBALS.isMac },
+    repeat = 1,
+  ): typeof docsInteractions {
     const element = (document.getElementsByClassName('docs-texteventtarget-iframe')[0] as HTMLIFrameElement)
       .contentDocument as Document
+    if (!element) return this
+
     const event = new KeyboardEvent('keydown', {
-      keyCode: FormatKey.format(key, opts.mac),
-      ctrlKey: (opts.ctrlKey && !opts.mac) ?? false,
-      shiftKey: opts.shiftKey ?? false,
-      metaKey: GLOBALS.isMac ? opts.ctrlKey ?? false : false,
+      keyCode: docsInteractions.keyMapper[key as keyof typeof docsInteractions.keyMapper] || null,
+      key: FormatKey.format(key, opts.mac),
+      ctrlKey: opts.ctrlKey && !opts.mac,
+      shiftKey: opts.shiftKey,
+      metaKey: GLOBALS.isMac && (opts.ctrlKey || false),
     })
-    console.log(event, 'event')
+
+    console.log('SENDING:', event)
+
     for (let i = 0; i < repeat; i++) element.dispatchEvent(event)
     return this
   }
 
-  public static jumpTo(target: string): void {
-    if (target.length > 1) return
-    console.log(Math.floor((Date.now() - this.startTime) / 1000), 'n')
-    if (Math.floor((Date.now() - this.startTime) / 1000) < 3) {
-      console.warn('Calling jumpTo too early, please wait at least 3 seconds')
-      return
-    }
-    this.pressHTMLElement('#docs-edit-menu', true)
+  public static jumpTo(target: keyof Keys, amount = 1, forward = true): void {
+    if (amount > 1000 || target.length > 1) return
     this.pressHTMLElement('.goog-menuitem.apps-menuitem[id=":7d"]')
     this.pressHTMLElement('.goog-menuitem.apps-menuitem[id=":7d"]')
     ;(document.querySelector('.docs-findinput-container input') as HTMLInputElement).value = target
-    // Toggles checkbox on and off to focus box
-    ;(document.querySelector('#docs-findandreplacedialog-use-regular-expressions') as HTMLElement).click()
-    ;(document.querySelector('#docs-findandreplacedialog-use-regular-expressions') as HTMLElement).click()
 
-    this.pressHTMLElement('#docs-findandreplacedialog-button-next')
-    this.pressKey('esc', {})
-    this.pressKey('ArrowUp')
-    // this.pressHTMLElement('.modal-dialog-title-close')
-    // setTimeout(() => {
-    //   this.pressKey('ArrowLeft')
-    // }, 100    )
+    if (
+      (document.querySelector('#docs-findandreplacedialog-match-case') as HTMLElement).getAttribute('aria-checked') ===
+      'false'
+    ) {
+      ;(document.querySelector('#docs-findandreplacedialog-match-case') as HTMLElement).click()
+    }
+
+    // ;(document.querySelector('.modal-dialog.docs-dialog.docs-findandreplacedialog') as HTMLElement).style.display =
+    //   'none'
+    if (amount === 1 && forward) this.pressHTMLElement('#docs-findandreplacedialog-button-previous')
+    this.pressHTMLElement('.modal-dialog-title-close')
+    setTimeout(() => {
+      this.pressKey('ArrowLeft')
+      ;(document.querySelector('.modal-dialog.docs-dialog.docs-findandreplacedialog') as HTMLElement).style.display =
+        'block'
+    }, 300)
   }
 
-  private static _openColorMenu() {
+  private static _openColorMenu(): void {
     this.pressHTMLElement('#textColorButton')
   }
 
-  private static _openHighlightMenu() {
+  private static _openHighlightMenu(): void {
     this.pressHTMLElement('#bgColorButton')
   }
 
-  public static pickColor(color: Color) {
+  public static pickColor(color: Color): void {
     this._openColorMenu()
     this.pressHTMLElement(`.docs-material-colorpalette-colorswatch[title="${color}"]`, true)
   }
@@ -88,7 +134,7 @@ export default class docsInteractions {
         .activeElement as HTMLElement
   }
 
-  public static pickHighlight(color: Color | 'none') {
+  public static pickHighlight(color: Color | 'none'): void {
     this._openHighlightMenu()
     if (color === 'none') {
       this.pressHTMLElement('.goog-menuitem.colormenuitems-no-color', true)
@@ -100,60 +146,57 @@ export default class docsInteractions {
     )
   }
 
-  public static toggleBold() {
+  public static toggleBold(): typeof docsInteractions {
     this.pressKey('b', { ctrlKey: true, shiftKey: false, mac: GLOBALS.isMac })
 
     return this
   }
 
-  public static toggleItalic() {
+  public static toggleItalic(): typeof docsInteractions {
     this.pressKey('i', { ctrlKey: true, shiftKey: false, mac: GLOBALS.isMac })
 
     return this
   }
 
-  public static toggleUnderline() {
+  public static toggleUnderline(): typeof docsInteractions {
     this.pressKey('u', { ctrlKey: true, shiftKey: false, mac: GLOBALS.isMac })
 
     return this
   }
 
-  public static pressHTMLElement = (selector: string, clickingMenuItem = false, addNewLine = false) => {
+  public static pressHTMLElement = (selector: string, clickingMenuItem = false, amount = 1) => {
     const element = document.querySelector(selector)
     if (!element) return
 
-    console.log('pressing', element)
-
     const opts = { bubbles: true }
 
-    if (!clickingMenuItem) element.dispatchEvent(new MouseEvent('mousedown', opts))
+    if (!clickingMenuItem) {
+      const mousedown = new MouseEvent('mousedown', opts)
+      for (let i = 0; i < amount; i++) element.dispatchEvent(mousedown)
+    }
 
-    element.dispatchEvent(new MouseEvent('mouseenter', opts))
-    element.dispatchEvent(new MouseEvent('mousedown', opts))
-    element.dispatchEvent(new MouseEvent('mouseup', opts))
-    element.dispatchEvent(new MouseEvent('click', opts))
-    element.dispatchEvent(new MouseEvent('mouseleave', opts))
+    const events = {
+      mouseenter: new MouseEvent('mouseenter', opts),
+      mousedown: new MouseEvent('mousedown', opts),
+      mouseup: new MouseEvent('mouseup', opts),
+      click: new MouseEvent('click', opts),
+      mouseleave: new MouseEvent('mouseleave', opts),
+    }
 
-    /**
-     * Unused
-     */
-    if (addNewLine) {
-      try {
-        navigator.clipboard.readText().then((clipboardText) => {
-          console.log(`"${clipboardText.trim()}"`)
-          navigator.clipboard.writeText(`${clipboardText.trim()}\n`)
-        })
-      } catch (e) {
-        console.error(e)
-      }
+    for (let i = 0; i < amount; i++) {
+      element.dispatchEvent(events.mouseenter)
+      element.dispatchEvent(events.mousedown)
+      element.dispatchEvent(events.mouseup)
+      element.dispatchEvent(events.click)
+      element.dispatchEvent(events.mouseleave)
     }
   }
 
-  public static pasteText(text: string) {
+  public static pasteText(text: string): void {
     this._pasteText(text)
   }
 
-  private static _pasteText(text: string) {
+  private static _pasteText(text: string): typeof docsInteractions {
     const el = (
       (document.getElementsByClassName('docs-texteventtarget-iframe')[0] as HTMLIFrameElement)
         .contentDocument as Document
@@ -162,9 +205,7 @@ export default class docsInteractions {
     const data = new DataTransfer()
     data.setData('text/plain', text)
 
-    const paste = new ClipboardEvent('paste', {
-      clipboardData: data,
-    })
+    const paste = new ClipboardEvent('paste', { clipboardData: data })
     if (paste.clipboardData !== null) paste.clipboardData.setData('text/plain', text)
 
     el.dispatchEvent(paste)
