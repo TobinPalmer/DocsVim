@@ -73,7 +73,6 @@ export default class docsInteractions {
     for (let i = 0; i < repeat; i++) element.dispatchEvent(event)
     return this
   }
-
   public static jumpTo({
     target,
     forward = { mac: GLOBALS.isMac },

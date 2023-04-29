@@ -5,10 +5,21 @@ const delay = 150
 const sleep = (ms = delay) => new Promise((r) => setTimeout(r, ms))
 
 export default async function test() {
+  const Q = VIM.CommandQueue
   console.log('Starting tests')
-  // VIM.commandBuilder.add(docsInteraction.pasteText, ['This should paste\n\n'])
-  VIM.CommandQueue.add({ command: docsInteraction.pasteText, params: { text: 'hi' } })
-  // VIM.commandBuilder.add({ command: docsInteraction.jumpTo, params: 'h' })
+  Q.add({ command: docsInteraction.pasteText, params: { text: 'hello from test!!1\n\n' } })
+  Q.add({ command: docsInteraction.pasteText, params: { text: 'hello from test!!2\n\n' } })
+  Q.add({ command: docsInteraction.pasteText, params: { text: 'hello from test!!3\n\n' } })
+  Q.add({ command: docsInteraction.pasteText, params: { text: 'hello from test!!4\n\n' }, delay: 150 })
+  Q.add({ command: docsInteraction.pasteText, params: { text: 'hello from test!!5\n\n' } })
+  Q.add({ command: docsInteraction.pasteText, params: { text: 'hello from test!!6\n\n' } })
+  Q.add({ command: docsInteraction.pasteText, params: { text: 'hello from test!!7\n\n' } })
+  Q.add({ command: docsInteraction.pasteText, params: { text: 'hello from test!!8\n\n' } })
+  Q.add({ command: docsInteraction.pasteText, params: { text: 'hello from test!!9\n\n' } })
+  Q.add({ command: docsInteraction.pasteText, params: { text: 'hello from test!!10\n\n' } })
+  Q.add({ command: docsInteraction.pasteText, params: { text: 'hello from test!!11\n\n' } })
+  Q.add({ command: docsInteraction.pasteText, params: { text: 'hello from test!! last 12\n\n' } })
+  // VIM.CommandQueue.add({ command: docsInteraction.jumpTo, params: { target: 'h' } })
 
   // docsInteraction.pasteText('This should paste\n\n')
   // console.log('Pasting')

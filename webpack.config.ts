@@ -11,7 +11,8 @@ const config: webpack.Configuration = {
 
   mode: 'development',
 
-  devtool: false,
+  // devtool: false,
+  devtool: 'source-map',
 
   entry: {
     main: './src/ts/main.ts',
@@ -51,7 +52,7 @@ const config: webpack.Configuration = {
     }),
   ],
   optimization: {
-    minimize: true,
+    // minimize: true,
     minimizer: [
       new TerserPlugin({
         extractComments: false,

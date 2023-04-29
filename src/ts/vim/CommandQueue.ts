@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import docsInteractions from '../docs/docsInteraction'
 
@@ -11,69 +12,42 @@ type Command = (...args: any[]) => any
 export default class CommandQueue {
   private commandStack: [Command, any[], number][] = []
   private delayTimerId: ReturnType<typeof setTimeout> | null = null
-  // private commandStack: [(...args: any[]) => void, Array<CommandParams<any>>, number][] = []
-  private static readonly timeMap = {
-    jumpTo: 150,
-  }
+  private currentDelay = 0
 
-  // public add<T extends (...args: any[]) => any>({
-  //   command,
-  //   params,
-  //   delay = 0,
-  // }: CommandParams<T> & { delay?: number }): void {
-  //   this.commandStack.push([command, params, delay])
-  //   this.runCommands()
-  // }
-
-  public add<T extends Command>({ command, params, delay = 0 }: CommandParams<T> & { delay?: number }): void {
+  public add<T extends Command>({ command, params, delay = 5 }: CommandParams<T> & { delay?: number }): void {
     this.commandStack.push([command, params, delay])
 
-    if (this.delayTimerId === null) {
-      this.runCommands()
-    }
+    if (this.delayTimerId === null) this.runCommands()
   }
 
-  private runCommands() {
+  private runCommands(): void {
     if (this.delayTimerId !== null) {
       clearTimeout(this.delayTimerId)
       this.delayTimerId = null
     }
 
-    const nextCommand = this.commandStack.shift()
-
-    if (nextCommand === undefined) {
-      return
-    }
+    const nextCommand = this.commandStack[0]
+    if (!nextCommand) return
 
     const [command, params, delay] = nextCommand
+    const currentTime = new Date().getTime()
 
-    if (delay > 0) {
+    if (delay > 0 && (!this.currentDelay || currentTime >= this.currentDelay + delay)) {
+      this.currentDelay = currentTime
+      command(params)
+      this.commandStack.shift()
+      this.runCommands()
+    } else if (delay > 0) {
       this.delayTimerId = setTimeout(() => {
         this.delayTimerId = null
         this.runCommands()
-      }, delay)
-      this.commandStack.unshift(nextCommand)
+      }, delay - (currentTime - this.currentDelay))
     } else {
-      command(...params)
+      command(params)
+      this.commandStack.shift()
       this.runCommands()
     }
   }
-
-  // private runCommands() {
-  //   let timeLeft = 0
-  //   for (const [command, params] of this.commandStack) {
-  //     const delay = CommandBuilder.timeMap[command.name] ?? 0
-  //     if (delay > 0) {
-  //       setTimeout(() => {
-  //         command(...params)
-  //       }, timeLeft + delay)
-  //       timeLeft += delay
-  //     } else {
-  //       command(...params)
-  //     }
-  //   }
-  //   this.commandStack = [] // clear the stack after running all commands
-  // }
 
   public get stack() {
     return this.commandStack
