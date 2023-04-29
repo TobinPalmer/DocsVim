@@ -4,6 +4,7 @@ export enum vimMode {
   'visual' = 'visual',
   'visualLine' = 'visualLine',
   'command' = 'command',
+  'running' = 'running',
 }
 
 export interface keyboardOpts {

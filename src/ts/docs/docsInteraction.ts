@@ -13,7 +13,7 @@ export default class docsInteractions {
     })
   }
 
-  public static setCursorWidth(width: string, isInsertMode?: boolean) {
+  public static setCursorWidth({ width, isInsertMode }: { width: string; isInsertMode?: boolean }) {
     const cursor = this.getUserCursor
 
     if (cursor === null) return false
@@ -41,42 +41,54 @@ export default class docsInteractions {
 
     return document.querySelector('.kix-cursor')
   }
-
-  private static readonly keyMapper = {
-    ArrowUp: 38,
-    ArrowDown: 40,
-    ArrowLeft: 37,
-    ArrowRight: 39,
-    Enter: 13,
-  } as const
-
-  public static pressKey(
-    key: keyof Keys,
-    opts: keyboardOpts = { mac: GLOBALS.isMac },
+  public static pressKey({
+    key,
+    opts = { mac: GLOBALS.isMac },
     repeat = 1,
-  ): typeof docsInteractions {
+  }: {
+    key: keyof Keys
+    opts?: keyboardOpts
+    repeat?: number
+  }): typeof docsInteractions {
     const element = (document.getElementsByClassName('docs-texteventtarget-iframe')[0] as HTMLIFrameElement)
       .contentDocument as Document
     if (!element) return this
 
+    const keyMapper = Object.freeze({
+      ArrowUp: 38,
+      ArrowDown: 40,
+      ArrowLeft: 37,
+      ArrowRight: 39,
+      Enter: 13,
+    })
+
     const event = new KeyboardEvent('keydown', {
-      keyCode: docsInteractions.keyMapper[key as keyof typeof docsInteractions.keyMapper] || null,
+      keyCode: keyMapper[key as keyof typeof keyMapper] || null,
       key: FormatKey.format(key, opts.mac),
       ctrlKey: opts.ctrlKey && !opts.mac,
       shiftKey: opts.shiftKey,
       metaKey: GLOBALS.isMac && (opts.ctrlKey || false),
     })
 
-    console.log('SENDING:', event)
-
     for (let i = 0; i < repeat; i++) element.dispatchEvent(event)
     return this
   }
 
-  public static jumpTo(target: keyof Keys, amount = 1, forward = true): void {
-    if (amount > 1000 || target.length > 1) return
-    this.pressHTMLElement('.goog-menuitem.apps-menuitem[id=":7d"]')
-    this.pressHTMLElement('.goog-menuitem.apps-menuitem[id=":7d"]')
+  public static jumpTo({
+    target,
+    forward = { mac: GLOBALS.isMac },
+    repeat = 1,
+  }: {
+    target: keyof Keys
+    forward?: keyboardOpts
+    repeat?: number
+  }): typeof docsInteractions {
+    if (repeat > 1000 || target.length > 1) return this
+    this.pressHTMLElement({
+      selector: '.goog-menuitem.apps-menuitem[id=":7d"]',
+      clickingMenuItem: false,
+      repeat: 2,
+    })
     ;(document.querySelector('.docs-findinput-container input') as HTMLInputElement).value = target
 
     if (
@@ -86,31 +98,48 @@ export default class docsInteractions {
       ;(document.querySelector('#docs-findandreplacedialog-match-case') as HTMLElement).click()
     }
 
-    // ;(document.querySelector('.modal-dialog.docs-dialog.docs-findandreplacedialog') as HTMLElement).style.display =
-    //   'none'
-    if (amount === 1 && forward) this.pressHTMLElement('#docs-findandreplacedialog-button-previous')
-    this.pressHTMLElement('.modal-dialog-title-close')
+    ;(document.querySelector('.modal-dialog.docs-dialog.docs-findandreplacedialog') as HTMLElement).style.display =
+      'none'
+    if (forward) {
+      for (let i = 1; i < repeat; i++) {
+        console.log('in loop', repeat)
+        this.pressHTMLElement({
+          selector: '#docs-findandreplacedialog-button-next',
+        })
+      }
+    } else {
+      for (let i = 1; i < repeat + 1; i++) {
+        this.pressHTMLElement({
+          selector: '#docs-findandreplacedialog-button-previous',
+        })
+      }
+    }
+    this.pressHTMLElement({ selector: '.modal-dialog-title-close' })
     setTimeout(() => {
-      this.pressKey('ArrowLeft')
+      this.pressKey({ key: 'ArrowLeft' })
       ;(document.querySelector('.modal-dialog.docs-dialog.docs-findandreplacedialog') as HTMLElement).style.display =
         'block'
-    }, 300)
+    }, 2000)
+    return this
   }
 
   private static _openColorMenu(): void {
-    this.pressHTMLElement('#textColorButton')
+    this.pressHTMLElement({ selector: '#textColorButton' })
   }
 
   private static _openHighlightMenu(): void {
-    this.pressHTMLElement('#bgColorButton')
+    this.pressHTMLElement({ selector: '#bgColorButton' })
   }
 
-  public static pickColor(color: Color): void {
+  public static pickColor({ color }: { color: Color }): void {
     this._openColorMenu()
-    this.pressHTMLElement(`.docs-material-colorpalette-colorswatch[title="${color}"]`, true)
+    this.pressHTMLElement({
+      selector: `.docs-material-colorpalette-colorswatch[title="${color}"]`,
+      clickingMenuItem: true,
+    })
   }
 
-  private static _waitForElm(selector: string): Promise<HTMLElement> {
+  private static _waitForElm({ selector }: { selector: string }): Promise<HTMLElement> {
     return new Promise((resolve) => {
       if (document.querySelector(selector)) return resolve(document.querySelector(selector) as HTMLElement)
 
@@ -130,41 +159,66 @@ export default class docsInteractions {
 
   public static get textTarget(): () => Promise<HTMLElement> {
     return async () =>
-      (((await this._waitForElm('.docs-texteventtarget-iframe')) as HTMLIFrameElement).contentDocument as Document)
-        .activeElement as HTMLElement
+      (
+        (
+          (await this._waitForElm({
+            selector: '.docs-texteventtarget-iframe',
+          })) as HTMLIFrameElement
+        ).contentDocument as Document
+      ).activeElement as HTMLElement
   }
 
-  public static pickHighlight(color: Color | 'none'): void {
+  public static pickHighlight({ color }: { color: Color | 'none' }): void {
     this._openHighlightMenu()
     if (color === 'none') {
-      this.pressHTMLElement('.goog-menuitem.colormenuitems-no-color', true)
+      this.pressHTMLElement({
+        selector: '.goog-menuitem.colormenuitems-no-color',
+        clickingMenuItem: true,
+      })
       return
     }
-    this.pressHTMLElement(
-      `.goog-menu.goog-menu-vertical.docs-colormenuitems.docs-material.goog-menu-noaccel [id=":b1"] + .docs-material-colorpalette .docs-material-colorpalette-colorswatch[title="${color}"]`,
-      true,
-    )
+    this.pressHTMLElement({
+      selector: `.goog-menu.goog-menu-vertical.docs-colormenuitems.docs-material.goog-menu-noaccel [id=":b1"] + .docs-material-colorpalette .docs-material-colorpalette-colorswatch[title="${color}"]`,
+      clickingMenuItem: true,
+    })
   }
 
   public static toggleBold(): typeof docsInteractions {
-    this.pressKey('b', { ctrlKey: true, shiftKey: false, mac: GLOBALS.isMac })
+    this.pressKey({
+      key: 'b',
+      opts: { ctrlKey: true, shiftKey: false, mac: GLOBALS.isMac },
+    })
 
     return this
   }
 
   public static toggleItalic(): typeof docsInteractions {
-    this.pressKey('i', { ctrlKey: true, shiftKey: false, mac: GLOBALS.isMac })
+    this.pressKey({
+      key: 'i',
+      opts: { ctrlKey: true, shiftKey: false, mac: GLOBALS.isMac },
+    })
 
     return this
   }
 
   public static toggleUnderline(): typeof docsInteractions {
-    this.pressKey('u', { ctrlKey: true, shiftKey: false, mac: GLOBALS.isMac })
+    this.pressKey({
+      key: 'u',
+      opts: { ctrlKey: true, shiftKey: false, mac: GLOBALS.isMac },
+    })
 
     return this
   }
 
-  public static pressHTMLElement = (selector: string, clickingMenuItem = false, amount = 1) => {
+  public static pressHTMLElement({
+    selector,
+    clickingMenuItem = false,
+    repeat = 1,
+  }: {
+    selector: string
+    clickingMenuItem?: boolean
+    repeat?: number
+  }) {
     const element = document.querySelector(selector)
     if (!element) return
 
@@ -172,7 +226,7 @@ export default class docsInteractions {
 
     if (!clickingMenuItem) {
       const mousedown = new MouseEvent('mousedown', opts)
-      for (let i = 0; i < amount; i++) element.dispatchEvent(mousedown)
+      for (let i = 0; i < repeat; i++) element.dispatchEvent(mousedown)
     }
 
     const events = {
@@ -183,7 +237,7 @@ export default class docsInteractions {
       mouseleave: new MouseEvent('mouseleave', opts),
     }
 
-    for (let i = 0; i < amount; i++) {
+    for (let i = 0; i < repeat; i++) {
       element.dispatchEvent(events.mouseenter)
       element.dispatchEvent(events.mousedown)
       element.dispatchEvent(events.mouseup)
@@ -192,11 +246,8 @@ export default class docsInteractions {
     }
   }
 
-  public static pasteText(text: string): void {
-    this._pasteText(text)
-  }
-
-  private static _pasteText(text: string): typeof docsInteractions {
+  public static pasteText({ text }: { text: string }): typeof docsInteractions {
+    console.log('pasting', text)
     const el = (
       (document.getElementsByClassName('docs-texteventtarget-iframe')[0] as HTMLIFrameElement)
         .contentDocument as Document
