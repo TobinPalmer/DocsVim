@@ -1,7 +1,8 @@
 import FormatKey, { type Keys } from '../input/FormatKey'
-import { GLOBALS } from '../main'
+import { GLOBALS, VIM } from '../main'
 import { type Color } from '../types/docTypes'
 import { type keyboardOpts } from '../types/vimTypes'
+import Vim from '../vim/Vim'
 
 export default class docsInteractions {
   public static startTime = Date.now()
@@ -182,13 +183,13 @@ export default class docsInteractions {
     })
   }
 
-  public static toggleBold(): typeof docsInteractions {
-    this.pressKey({
-      key: 'b',
-      opts: { ctrlKey: true, shiftKey: false, mac: GLOBALS.isMac },
-    })
-
-    return this
+  public static toggleBold() {
+    console.log('Toggling Bold')
+    docsInteractions.pressKey({ key: 'b', opts: { ctrlKey: true, shiftKey: false, mac: GLOBALS.isMac } })
+    // VIM.CommandQueue.add({
+    //   command: docsInteractions.pressKey,
+    //   params: { key: 'b', opts: { ctrlKey: true, shiftKey: false, mac: GLOBALS.isMac } },
+    // })
   }
 
   public static toggleItalic(): typeof docsInteractions {
@@ -246,7 +247,7 @@ export default class docsInteractions {
   }
 
   public static pasteText({ text }: { text: string }): typeof docsInteractions {
-    console.log('pasting', text)
+    console.log('Pasting Text', text)
     const el = (
       (document.getElementsByClassName('docs-texteventtarget-iframe')[0] as HTMLIFrameElement)
         .contentDocument as Document

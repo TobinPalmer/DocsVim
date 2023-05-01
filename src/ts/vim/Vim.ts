@@ -1,9 +1,9 @@
 import { vimMode } from '../types/vimTypes'
-import Motion from './Motion'
+// import { Motion } from './Motion'
 
 export default class Vim {
   constructor(private _mode: keyof typeof vimMode) {}
-  private motion = new Motion()
+  // private motion = new Motion()
 
   get mode() {
     return this._mode
@@ -18,7 +18,7 @@ export default class Vim {
       this.mode = 'normal'
     }
     if (this.mode === 'normal') {
-      this.motion.feedkey('')
+      // this.motion.feedkey('')
     }
   }
 }

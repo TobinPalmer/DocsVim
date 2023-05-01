@@ -1,0 +1,123 @@
+export const COMMAND_MAP = Object.freeze({
+  insert: {
+    Escape: () => console.log('hi'),
+  },
+  visualLine: {
+    Backspace: () => null,
+    Space: () => null,
+    Escape: () => null,
+    G: () => null,
+    '^': () => null,
+    d: () => null,
+    h: () => null,
+    j: () => null,
+    k: () => null,
+    l: () => null,
+    w: () => null,
+    x: () => null,
+    y: () => null,
+  },
+
+  visual: {
+    $: () => null,
+    0: () => null,
+    Backspace: {
+      visual: () => null,
+      visualLine: () => null,
+    },
+    Space: {
+      visual: () => null,
+      visualLine: () => null,
+    },
+    Escape: {
+      visual: () => null,
+      insert: () => null,
+      visualLine: () => null,
+    },
+    G: {
+      visual: () => null,
+      visualLine: () => null,
+    },
+    '^': {
+      visual: () => null,
+      visualLine: () => null,
+    },
+    b: () => null,
+    c: () => null,
+    d: {
+      visual: () => null,
+      visualLine: () => null,
+    },
+    e: () => null,
+    g: () => null,
+    h: {
+      visual: () => null,
+      visualLine: () => null,
+    },
+    j: {
+      visual: () => null,
+      visualLine: () => null,
+    },
+    k: {
+      visual: () => null,
+      visualLine: () => null,
+    },
+    l: {
+      visual: () => null,
+      visualLine: () => null,
+    },
+    u: () => null,
+    w: {
+      visual: () => null,
+      visualLine: () => null,
+    },
+    x: {
+      visual: () => null,
+      visualLine: () => null,
+    },
+    y: {
+      visual: () => null,
+      visualLine: () => null,
+    },
+  },
+  normal: {
+    $: () => null,
+    0: () => null,
+    Backspace: () => null,
+    Space: () => null,
+    D: () => null,
+    C: () => null,
+    G: () => null,
+    O: () => null,
+    V: () => null,
+    '^': () => null,
+    a: () => null,
+    b: () => null,
+    c: () => null,
+    d: {
+      i: {
+        w: () => console.log('diw'),
+      },
+      a: {
+        w: () => console.log('daw'),
+      },
+    },
+    e: () => null,
+    g: () => null,
+    h: () => null,
+    i: () => null,
+    I: () => null,
+    A: () => null,
+    j: () => null,
+    k: () => null,
+    l: () => null,
+    o: () => null,
+    p: () => null,
+    P: () => null,
+    u: () => null,
+    v: () => null,
+    w: () => null,
+    x: () => null,
+    y: () => null,
+  },
+} as const)
