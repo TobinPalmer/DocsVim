@@ -1,3 +1,4 @@
+import { GLOBALS, VIM } from '../main'
 import { vimMode } from '../types/vimTypes'
 // import { Motion } from './Motion'
 
@@ -13,12 +14,17 @@ export default class Vim {
     this._mode = mode
   }
 
+  private static keyToString(key: string) {
+    const mapper = {}
+    return mapper[key as keyof typeof mapper] || key
+  }
+
   public keydown(key: string) {
     if (key === 'escape' && this.mode !== 'normal') {
       this.mode = 'normal'
     }
     if (this.mode === 'normal') {
-      // this.motion.feedkey('')
+      VIM.motion.feedkey(Vim.keyToString(key))
     }
   }
 }

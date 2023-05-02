@@ -4,16 +4,24 @@ import { type Color } from '../types/docTypes'
 import { type keyboardOpts } from '../types/vimTypes'
 import Vim from '../vim/Vim'
 
+/**
+ * This class is used to interact with the google docs page
+ */
 export default class docsInteractions {
-  public static startTime = Date.now()
   constructor() {
     docsInteractions.textTarget().then((target) => {
       target.addEventListener('keydown', (e) => {
-        GLOBALS.vim.keydown(e.key)
+        // Sends the keydown event to the vim class to handle it
+        VIM.vim.keydown(e.key)
       })
     })
   }
 
+  /**
+   * setCursorWidth.
+   * @param width the width to set the cursor.
+   * @param isInsertMode changes the color of the cursor depending on mode.
+   */
   public static setCursorWidth({ width, isInsertMode }: { width: string; isInsertMode?: boolean }) {
     const cursor = this.getUserCursor
 
@@ -27,6 +35,10 @@ export default class docsInteractions {
     return true
   }
 
+  /**
+   * Gets the users cursors elemenet
+   * @returns {Element | null}
+   */
   static get getUserCursor(): Element | null {
     let cursor: Element | null = null
 
@@ -42,6 +54,10 @@ export default class docsInteractions {
 
     return document.querySelector('.kix-cursor')
   }
+
+  /**
+   * Presses a key (not types a letter)
+   */
   public static pressKey({
     key,
     opts = { mac: GLOBALS.isMac },
@@ -74,66 +90,75 @@ export default class docsInteractions {
     for (let i = 0; i < repeat; i++) element.dispatchEvent(event)
     return this
   }
+  /**
+   * Jumps to a letter, either forward or backward
+   * @param target The letter to jump to
+   * @param forward Whether to go forward or backward
+   * @param repeat How many times to repeat
+   */
   public static jumpTo({
     target,
-    forward = { mac: GLOBALS.isMac },
+    forward = true,
     repeat = 1,
   }: {
     target: keyof Keys
-    forward?: keyboardOpts
+    forward?: boolean
     repeat?: number
-  }): typeof docsInteractions {
-    if (repeat > 1000 || target.length > 1) return this
-    this.pressHTMLElement({
+  }): void {
+    // Return exesively long repeats
+    if (repeat > 1000 || target.length > 1) return
+    docsInteractions.pressHTMLElement({
       selector: '.goog-menuitem.apps-menuitem[id=":7d"]',
       clickingMenuItem: false,
       repeat: 2,
     })
     ;(document.querySelector('.docs-findinput-container input') as HTMLInputElement).value = target
-
     if (
       (document.querySelector('#docs-findandreplacedialog-match-case') as HTMLElement).getAttribute('aria-checked') ===
       'false'
     ) {
+      console.log('clicking match case')
       ;(document.querySelector('#docs-findandreplacedialog-match-case') as HTMLElement).click()
     }
 
     ;(document.querySelector('.modal-dialog.docs-dialog.docs-findandreplacedialog') as HTMLElement).style.display =
       'none'
     if (forward) {
-      for (let i = 1; i < repeat; i++) {
-        console.log('in loop', repeat)
-        this.pressHTMLElement({
+      for (let i = 1; i < repeat; ++i) {
+        console.log('clicking next')
+        docsInteractions.pressHTMLElement({
           selector: '#docs-findandreplacedialog-button-next',
         })
       }
     } else {
       for (let i = 1; i < repeat + 1; i++) {
-        this.pressHTMLElement({
+        console.log('clicing previous')
+        docsInteractions.pressHTMLElement({
           selector: '#docs-findandreplacedialog-button-previous',
         })
       }
     }
-    this.pressHTMLElement({ selector: '.modal-dialog-title-close' })
+    docsInteractions.pressHTMLElement({ selector: '.modal-dialog-title-close' })
     setTimeout(() => {
-      this.pressKey({ key: 'ArrowLeft' })
+      docsInteractions.pressKey({ key: 'ArrowLeft' })
       ;(document.querySelector('.modal-dialog.docs-dialog.docs-findandreplacedialog') as HTMLElement).style.display =
         'block'
-    }, 2000)
-    return this
+    }, 150)
+    return
   }
 
   private static _openColorMenu(): void {
-    this.pressHTMLElement({ selector: '#textColorButton' })
+    docsInteractions.pressHTMLElement({ selector: '#textColorButton' })
   }
 
   private static _openHighlightMenu(): void {
-    this.pressHTMLElement({ selector: '#bgColorButton' })
+    docsInteractions.pressHTMLElement({ selector: '#bgColorButton' })
   }
 
   public static pickColor({ color }: { color: Color }): void {
-    this._openColorMenu()
-    this.pressHTMLElement({
+    docsInteractions._openColorMenu()
+
+    docsInteractions.pressHTMLElement({
       selector: `.docs-material-colorpalette-colorswatch[title="${color}"]`,
       clickingMenuItem: true,
     })
@@ -169,45 +194,43 @@ export default class docsInteractions {
   }
 
   public static pickHighlight({ color }: { color: Color | 'none' }): void {
-    this._openHighlightMenu()
+    docsInteractions._openHighlightMenu()
     if (color === 'none') {
-      this.pressHTMLElement({
+      docsInteractions.pressHTMLElement({
         selector: '.goog-menuitem.colormenuitems-no-color',
         clickingMenuItem: true,
       })
       return
     }
-    this.pressHTMLElement({
+    docsInteractions.pressHTMLElement({
       selector: `.goog-menu.goog-menu-vertical.docs-colormenuitems.docs-material.goog-menu-noaccel [id=":b1"] + .docs-material-colorpalette .docs-material-colorpalette-colorswatch[title="${color}"]`,
       clickingMenuItem: true,
     })
   }
 
   public static toggleBold() {
-    console.log('Toggling Bold')
-    docsInteractions.pressKey({ key: 'b', opts: { ctrlKey: true, shiftKey: false, mac: GLOBALS.isMac } })
+    docsInteractions.pressKey({
+      key: 'b',
+      opts: { ctrlKey: true, shiftKey: false, mac: GLOBALS.isMac },
+    })
     // VIM.CommandQueue.add({
     //   command: docsInteractions.pressKey,
     //   params: { key: 'b', opts: { ctrlKey: true, shiftKey: false, mac: GLOBALS.isMac } },
     // })
   }
 
-  public static toggleItalic(): typeof docsInteractions {
-    this.pressKey({
+  public static toggleItalic() {
+    docsInteractions.pressKey({
       key: 'i',
       opts: { ctrlKey: true, shiftKey: false, mac: GLOBALS.isMac },
     })
-
-    return this
   }
 
-  public static toggleUnderline(): typeof docsInteractions {
-    this.pressKey({
+  public static toggleUnderline() {
+    docsInteractions.pressKey({
       key: 'u',
       opts: { ctrlKey: true, shiftKey: false, mac: GLOBALS.isMac },
     })
-
-    return this
   }
 
   public static pressHTMLElement({
@@ -247,7 +270,6 @@ export default class docsInteractions {
   }
 
   public static pasteText({ text }: { text: string }): typeof docsInteractions {
-    console.log('Pasting Text', text)
     const el = (
       (document.getElementsByClassName('docs-texteventtarget-iframe')[0] as HTMLIFrameElement)
         .contentDocument as Document

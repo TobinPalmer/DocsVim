@@ -1,106 +1,81 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import docsInteractions from '../docs/docsInteraction'
-
+/**
+ * The interface for the parameters of a command
+ * T will be the function, and it will infer the Parameters<T> type to get the parameters
+ */
 interface CommandParams<T extends (...args: any[]) => any> {
-  command: T
+  func: T
   params: Parameters<T>[0] extends undefined ? [] : Parameters<T>[0]
 }
 
-type Command = (...args: any[]) => any
+/**
+ * Type for command function
+ */
+type CommandFunction = (...args: any[]) => any
 
+/**
+ * The interface for each command object
+ */
+interface Command {
+  func: CommandFunction
+  params: any[]
+  delay: number
+}
+
+/**
+ * The class that handles the queueing and execution of commands
+ */
 export default class CommandQueue {
-  private commandStack: [Command, any[], number][] = []
-  private delayTimerId: ReturnType<typeof setTimeout> | null = null
-  private currentDelay = 0
+  /**
+   * The list of commands to be executed, commands are added, executed, and removed from the list in order
+   */
+  private commandStack: Command[] = []
 
-  public add<T extends Command>({ command, params, delay = 5 }: CommandParams<T> & { delay?: number }): void {
-    this.commandStack.push([command, params, delay])
+  /**
+   * The timer that is used to delay the execution of commands
+   */
+  private delayTimer: ReturnType<typeof setTimeout> | null = null
 
-    if (this.delayTimerId === null) this.runCommands()
+  /**
+   * Adds a command to a list of commands to be executed, in order
+   * @param command The object of the command to add
+   */
+  public add<T extends CommandFunction>(command: CommandParams<T> & { delay?: number }): void {
+    command.delay ||= 5 // default delay of 5ms
+
+    this.commandStack.push(command as Command) // add the command to the stack
+
+    if (this.delayTimer === null) this.runCommands() // If there is no current delay, run the commands
   }
 
+  /**
+   * Runs the commands in the command stack, respecting delay
+   */
   private runCommands(): void {
-    if (this.delayTimerId !== null) {
-      clearTimeout(this.delayTimerId)
-      this.delayTimerId = null
+    // If there is a delay timer, clear it
+    if (this.delayTimer !== null) {
+      clearTimeout(this.delayTimer)
+      this.delayTimer = null
     }
 
-    let nextCommand = this.commandStack[0]
-    const currentTime = new Date().getTime()
+    // If there are no commands, return
+    if (this.commandStack.length === 0) return
 
-    while (nextCommand && (!nextCommand[2] || currentTime >= this.currentDelay + nextCommand[2])) {
-      const [command, params, delay] = nextCommand
-      this.currentDelay = delay ? currentTime : 0
-      command(params)
-      this.commandStack.shift()
-      nextCommand = this.commandStack[0]
-    }
+    const nextCommand = this.commandStack.shift() // Get the next command
+    if (nextCommand == undefined) return // If there is no next command, return
 
-    if (nextCommand && nextCommand[2]) {
-      this.delayTimerId = setTimeout(() => {
-        this.delayTimerId = null
-        this.runCommands()
-      }, nextCommand[2] - (currentTime - this.currentDelay))
-    }
+    nextCommand.func(nextCommand.params) // Run the command
+
+    // Set a new delay timer that will run the next command when finished
+    this.delayTimer = setTimeout(() => {
+      this.runCommands()
+    }, nextCommand.delay)
   }
 
+  /**
+   * Returns the current stack of commands
+   */
   public get stack() {
     return this.commandStack
   }
 }
-
-// /* eslint-disable @typescript-eslint/no-explicit-any */
-// import { warn } from 'console'
-// import docsInteractions from '../docs/docsInteraction'
-//
-// interface CommandParams<T extends (...args: any[]) => any> {
-//   command: T
-//   params: Parameters<T>[0] extends undefined ? [] : Parameters<T>[0]
-// }
-//
-// type Command = (...args: any[]) => any
-//
-// export default class CommandQueue {
-//   private commandStack: [Command, any[], number][] = []
-//   private delayTimerId: ReturnType<typeof setTimeout> | null = null
-//   private currentDelay = 0
-//
-//   public add<T extends Command>({ command, params, delay = 500 }: CommandParams<T> & { delay?: number }): void {
-//     this.commandStack.push([command, params, delay])
-//
-//     if (this.delayTimerId === null) this.runCommands()
-//   }
-//
-//   private runCommands(): void {
-//     if (this.delayTimerId !== null) {
-//       clearTimeout(this.delayTimerId)
-//       this.delayTimerId = null
-//     }
-//
-//     const nextCommand = this.commandStack[0]
-//     if (!nextCommand) return
-//
-//     const [command, params, delay] = nextCommand
-//     const currentTime = new Date().getTime()
-//
-//     if (delay > 0 && (!this.currentDelay || currentTime >= this.currentDelay + delay)) {
-//       this.currentDelay = currentTime
-//       command(params)
-//       this.commandStack.shift()
-//       this.runCommands()
-//     } else if (delay > 0) {
-//       this.delayTimerId = setTimeout(() => {
-//         this.delayTimerId = null
-//         this.runCommands()
-//       }, delay - (currentTime - this.currentDelay))
-//     } else {
-//       command(params)
-//       this.commandStack.shift()
-//       this.runCommands()
-//     }
-//   }
-//
-//   public get stack() {
-//     return this.commandStack
-//   }
-// }

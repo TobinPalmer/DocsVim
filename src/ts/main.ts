@@ -10,7 +10,6 @@ export const interactions = new docsInteraction()
 
 export const GLOBALS = Object.freeze({
   isMac: navigator.userAgent.indexOf('MAC') >= 0 || navigator.platform.toUpperCase().indexOf('MAC') >= 0,
-  vim: new Vim('insert'),
   interactions: new docsInteraction(),
 } as const)
 
@@ -18,11 +17,11 @@ export const VIM = Object.freeze({
   vim: new Vim('insert'),
   VimBuffer: new VimBuffer(),
   CommandQueue: new CommandQueue(),
+  motion: new Motion(),
 } as const)
 
-// test()
-const motion = new Motion()
-motion.feedkey('normal')
-motion.feedkey('d')
-motion.feedkey('i')
-motion.feedkey('w')
+test()
+// VIM.motion.feedkey('normal')
+// VIM.motion.feedkey('d')
+// VIM.motion.feedkey('i')
+// VIM.motion.feedkey('w')
