@@ -1,7 +1,7 @@
 import FormatKey, { type Keys } from '../input/FormatKey'
-import { GLOBALS, VIM } from '../main'
+import { VIM } from '../main'
 import { type Color } from '../types/docTypes'
-import { type keyboardOpts } from '../types/vimTypes'
+import { type KeyboardOpts } from '../types/vimTypes'
 import Vim from '../vim/Vim'
 
 /**
@@ -11,25 +11,36 @@ export default class docsInteractions {
   constructor() {
     docsInteractions.textTarget().then((target) => {
       target.addEventListener('keydown', (e) => {
+        const opts: KeyboardOpts = {
+          ctrlKey: e.ctrlKey,
+          shiftKey: e.shiftKey,
+          altKey: e.altKey,
+        }
         // Sends the keydown event to the vim class to handle it
-        VIM.vim.keydown(e.key)
+        if (VIM.vim.keydown(e.key)) e.preventDefault()
       })
     })
   }
 
+  public static getFontSize(): number {
+    return parseInt(
+      (document.querySelector('[id=":16"] .goog-toolbar-combo-button-input.jfk-textinput') as HTMLInputElement).value,
+    )
+  }
+
   /**
-   * setCursorWidth.
    * @param width the width to set the cursor.
    * @param isInsertMode changes the color of the cursor depending on mode.
    */
-  public static setCursorWidth({ width, isInsertMode }: { width: string; isInsertMode?: boolean }) {
+  public static setCursorWidth({ width, isInsertMode }: { width: number; isInsertMode?: boolean }) {
     const cursor = this.getUserCursor
 
     if (cursor === null) return false
     const caret = cursor.querySelector('.kix-cursor-caret') as HTMLElement
 
-    caret.style.borderWidth = width
-    const cursorColor = `rgba(${isInsertMode ? 0 : 255}, 0, 0, ${isInsertMode ? 1 : 0.5})`
+    caret.style.borderWidth = `${width}px`
+    // const cursorColor = `rgba(${isInsertMode ? 0 : 255}, 0, 0, ${isInsertMode ? 1 : 0.5})`
+    const cursorColor = `rgba(0, 0, 0, 0.5)`
     caret.style.setProperty('border-color', cursorColor, 'important')
     caret.style.mixBlendMode = 'difference'
     return true
@@ -60,13 +71,14 @@ export default class docsInteractions {
    */
   public static pressKey({
     key,
-    opts = { mac: GLOBALS.isMac },
+    opts = {},
     repeat = 1,
   }: {
     key: keyof Keys
-    opts?: keyboardOpts
+    opts?: KeyboardOpts
     repeat?: number
   }): typeof docsInteractions {
+    opts.mac = opts.mac ?? VIM.isMac
     const element = (document.getElementsByClassName('docs-texteventtarget-iframe')[0] as HTMLIFrameElement)
       .contentDocument as Document
     if (!element) return this
@@ -76,6 +88,7 @@ export default class docsInteractions {
       ArrowDown: 40,
       ArrowLeft: 37,
       ArrowRight: 39,
+      Backspace: 8,
       Enter: 13,
     })
 
@@ -84,7 +97,8 @@ export default class docsInteractions {
       key: FormatKey.format(key, opts.mac),
       ctrlKey: opts.ctrlKey && !opts.mac,
       shiftKey: opts.shiftKey,
-      metaKey: GLOBALS.isMac && (opts.ctrlKey || false),
+      altKey: opts.altKey,
+      metaKey: VIM.isMac && (opts.ctrlKey || false),
     })
 
     for (let i = 0; i < repeat; i++) element.dispatchEvent(event)
@@ -132,7 +146,7 @@ export default class docsInteractions {
       }
     } else {
       for (let i = 1; i < repeat + 1; i++) {
-        console.log('clicing previous')
+        console.log('clicking previous')
         docsInteractions.pressHTMLElement({
           selector: '#docs-findandreplacedialog-button-previous',
         })
@@ -143,7 +157,7 @@ export default class docsInteractions {
       docsInteractions.pressKey({ key: 'ArrowLeft' })
       ;(document.querySelector('.modal-dialog.docs-dialog.docs-findandreplacedialog') as HTMLElement).style.display =
         'block'
-    }, 150)
+    }, 175)
     return
   }
 
@@ -211,25 +225,25 @@ export default class docsInteractions {
   public static toggleBold() {
     docsInteractions.pressKey({
       key: 'b',
-      opts: { ctrlKey: true, shiftKey: false, mac: GLOBALS.isMac },
+      opts: { ctrlKey: true, shiftKey: false, mac: VIM.isMac },
     })
     // VIM.CommandQueue.add({
     //   command: docsInteractions.pressKey,
-    //   params: { key: 'b', opts: { ctrlKey: true, shiftKey: false, mac: GLOBALS.isMac } },
+    //   params: { key: 'b', opts: { ctrlKey: true, shiftKey: false, mac: VIM.isMac } },
     // })
   }
 
   public static toggleItalic() {
     docsInteractions.pressKey({
       key: 'i',
-      opts: { ctrlKey: true, shiftKey: false, mac: GLOBALS.isMac },
+      opts: { ctrlKey: true, shiftKey: false, mac: VIM.isMac },
     })
   }
 
   public static toggleUnderline() {
     docsInteractions.pressKey({
       key: 'u',
-      opts: { ctrlKey: true, shiftKey: false, mac: GLOBALS.isMac },
+      opts: { ctrlKey: true, shiftKey: false, mac: VIM.isMac },
     })
   }
 

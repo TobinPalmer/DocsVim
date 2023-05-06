@@ -26,6 +26,11 @@ module.exports = {
         printWidth: 120,
       },
     ],
+    eqeqeq: ['warn', 'always'],
+    'no-constructor-return': ['warn', 'always'],
+    'no-duplicate-imports': ['warn', 'always'],
+    'array-callback-return': ['warn', 'always'],
+    'no-constant-binary-expression': ['warn', 'always'],
   },
 
   ignorePatterns: ['dist/**/*'],

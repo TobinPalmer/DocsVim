@@ -1,4 +1,6 @@
+import { VIM } from '../main'
 import { COMMAND_MAP } from './commandMap'
+import { KeyboardOpts } from '../types/vimTypes'
 
 interface CommandMap {
   [key: string]: CommandMap | (() => void)
@@ -7,26 +9,27 @@ interface CommandMap {
 const isFunction = (fun: unknown): fun is () => void => typeof fun === 'function'
 
 export class Motion {
-  private currentKeys: string[] = []
+  private currentKeys: { key: string; opts: KeyboardOpts }[] = []
 
-  public feedkey(key: string) {
-    this.currentKeys.push(key)
+  public feedkey(key: string, opts: KeyboardOpts = {}): boolean {
+    this.currentKeys.push({ key, opts })
 
-    let currentObject: CommandMap = COMMAND_MAP
+    let currentObject: CommandMap = COMMAND_MAP[VIM.vim.mode]
 
     for (const currentKey of this.currentKeys) {
-      if (isFunction(currentObject[currentKey])) {
-        ;(currentObject[currentKey] as () => void)()
+      const key = currentKey.key
+      if (isFunction(currentObject[key])) {
+        ;(currentObject[currentKey.key] as (opts: KeyboardOpts) => void)(currentKey.opts)
         this.currentKeys = []
         currentObject = COMMAND_MAP
-        return
+        return false
       } else {
-        if (typeof currentObject[currentKey] === 'undefined') {
+        if (typeof currentObject[key] === 'undefined') {
           this.currentKeys = []
           currentObject = COMMAND_MAP
-          return
+          return false
         }
-        currentObject = currentObject[currentKey] as CommandMap
+        currentObject = currentObject[key] as CommandMap
       }
     }
 
@@ -37,8 +40,10 @@ export class Motion {
     } else if (currentObject === undefined) {
       this.currentKeys = []
       currentObject = COMMAND_MAP
+      return false
     } else {
       currentObject = currentObject as CommandMap
     }
+    return true
   }
 }
