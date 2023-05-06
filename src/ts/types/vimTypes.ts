@@ -1,4 +1,4 @@
-export enum vimMode {
+export enum VimMode {
   'normal' = 'normal',
   'insert' = 'insert',
   'visual' = 'visual',
@@ -7,8 +7,9 @@ export enum vimMode {
   'running' = 'running',
 }
 
-export interface keyboardOpts {
+export interface KeyboardOpts {
   ctrlKey?: boolean
   shiftKey?: boolean
+  altKey?: boolean
   mac?: boolean
 }
