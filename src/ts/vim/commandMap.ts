@@ -1,6 +1,12 @@
+import docsInteraction from '../docs/docsInteraction'
+import { VIM } from '../main'
+import { type KeyboardOpts, VimMode } from '../types/vimTypes'
+
 export const COMMAND_MAP = Object.freeze({
   insert: {
-    Escape: () => console.log('hi'),
+    Escape: () => {
+      VIM.vim.mode = VimMode.normal
+    },
   },
   visualLine: {
     Backspace: () => null,
@@ -17,7 +23,6 @@ export const COMMAND_MAP = Object.freeze({
     x: () => null,
     y: () => null,
   },
-
   visual: {
     $: () => null,
     0: () => null,
@@ -81,43 +86,112 @@ export const COMMAND_MAP = Object.freeze({
     },
   },
   normal: {
-    $: () => null,
-    0: () => null,
-    Backspace: () => null,
-    Space: () => null,
-    D: () => null,
-    C: () => null,
-    G: () => null,
-    O: () => null,
-    V: () => null,
-    '^': () => null,
-    a: () => null,
-    b: () => null,
-    c: () => null,
-    d: {
-      i: {
-        w: () => console.log('diw'),
-      },
-      a: {
-        w: () => console.log('daw'),
-      },
+    j(opts: KeyboardOpts = {}) {
+      const { ctrlKey, shiftKey, altKey } = opts
+      if (shiftKey) {
+        VIM.CommandQueue.add({
+          func: docsInteraction.pressKey,
+          params: { key: 'ArrowDown' },
+        })
+        VIM.CommandQueue.add({
+          func: docsInteraction.pressKey,
+          params: { key: 'ArrowLeft', opts: { ctrlKey: true } },
+        })
+        return VIM.CommandQueue.add({
+          func: docsInteraction.pressKey,
+          params: { key: 'Backspace' },
+        })
+      }
+      if (!ctrlKey && !altKey && !shiftKey) {
+        return VIM.CommandQueue.add({
+          func: docsInteraction.pressKey,
+          params: { key: 'ArrowDown' },
+        })
+      }
     },
-    e: () => null,
-    g: () => null,
-    h: () => null,
-    i: () => null,
-    I: () => null,
-    A: () => null,
-    j: () => null,
-    k: () => null,
-    l: () => null,
-    o: () => null,
-    p: () => null,
-    P: () => null,
-    u: () => null,
-    v: () => null,
-    w: () => null,
-    x: () => null,
-    y: () => null,
+    i(opts: KeyboardOpts = {}) {
+      VIM.vim.mode = VimMode.insert
+    },
+    a() {
+      VIM.CommandQueue.add({
+        func: docsInteraction.pressKey,
+        params: { key: 'ArrowRight' },
+      })
+      VIM.vim.mode = VimMode.insert
+    },
+    $(opts: KeyboardOpts = {}) {
+      VIM.CommandQueue.add({
+        func: docsInteraction.pressKey,
+        params: { key: 'ArrowRight', opts: { ctrlKey: true } },
+      })
+    },
+    0(opts: KeyboardOpts = {}) {
+      VIM.CommandQueue.add({
+        func: docsInteraction.pressKey,
+        params: { key: 'ArrowLeft', opts: { ctrlKey: true } },
+      })
+    },
+    h(opts: KeyboardOpts = {}) {
+      VIM.CommandQueue.add({
+        func: docsInteraction.pressKey,
+        params: { key: 'ArrowLeft' },
+      })
+    },
+    k(opts: KeyboardOpts = {}) {
+      VIM.CommandQueue.add({
+        func: docsInteraction.pressKey,
+        params: { key: 'ArrowUp' },
+      })
+    },
+    l(opts: KeyboardOpts = {}) {
+      VIM.CommandQueue.add({
+        func: docsInteraction.pressKey,
+        params: { key: 'ArrowRight' },
+      })
+    },
+    w(opts: KeyboardOpts = {}) {
+      VIM.CommandQueue.add({
+        func: docsInteraction.pressKey,
+        params: { key: 'ArrowRight', opts: { altKey: true } },
+        delay: 0,
+      })
+      VIM.CommandQueue.add({
+        func: docsInteraction.pressKey,
+        params: { key: 'ArrowRight', opts: { altKey: true } },
+        delay: 0,
+      })
+      return VIM.CommandQueue.add({
+        func: docsInteraction.pressKey,
+        params: { key: 'ArrowLeft', opts: { altKey: true } },
+      })
+    },
+    e(opts: KeyboardOpts = {}) {
+      return VIM.CommandQueue.add({
+        func: docsInteraction.pressKey,
+        params: { key: 'ArrowRight', opts: { altKey: true } },
+      })
+    },
+    b(opts: KeyboardOpts = {}) {
+      return VIM.CommandQueue.add({
+        func: docsInteraction.pressKey,
+        params: { key: 'ArrowLeft', opts: { altKey: true } },
+      })
+    },
+    x(opts: KeyboardOpts = {}) {
+      VIM.CommandQueue.add({
+        func: docsInteraction.pressKey,
+        params: { key: 'ArrowRight' },
+        delay: 0,
+      })
+      return VIM.CommandQueue.add({
+        func: docsInteraction.pressKey,
+        params: { key: 'Backspace' },
+      })
+    },
+    y(opts: KeyboardOpts = {}) {
+      null
+    },
   },
+  command: {},
+  running: {},
 } as const)
