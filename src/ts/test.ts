@@ -4,37 +4,37 @@ export default async function test() {
   console.log('starting tests')
   const Q = VIM.CommandQueue
 
-  // Q.add({ func: docsInteraction.pasteText, params: { text: "This text shouldn't be bold\n\n" }, delay: 5 })
-  // Q.add({ func: docsInteraction.toggleBold, params: [], delay: 5 })
-  // Q.add({ func: docsInteraction.pasteText, params: { text: 'This text should be bold\n\n' }, delay: 5 })
-  // Q.add({ func: docsInteraction.toggleBold, params: [] })
-  // Q.add({ func: docsInteraction.pasteText, params: { text: "This text shouldn't be bold\n\n" } })
+  Q.add({ func: docsInteraction.pasteText, params: { text: "This text shouldn't be bold\n\n" }, delay: 5 })
+  Q.add({ func: docsInteraction.toggleBold, params: [], delay: 5 })
+  Q.add({ func: docsInteraction.pasteText, params: { text: 'This text should be bold\n\n' }, delay: 5 })
+  Q.add({ func: docsInteraction.toggleBold, params: [] })
+  Q.add({ func: docsInteraction.pasteText, params: { text: "This text shouldn't be bold\n\n" } })
 
-  // Q.add({ func: docsInteraction.toggleItalic, params: [] })
-  // Q.add({ func: docsInteraction.pasteText, params: { text: 'This text should be italic\n\n' } })
-  // Q.add({ func: docsInteraction.toggleItalic, params: [] })
-  // Q.add({ func: docsInteraction.pasteText, params: { text: "This text shouldn't be italic\n\n" } })
+  Q.add({ func: docsInteraction.toggleItalic, params: [] })
+  Q.add({ func: docsInteraction.pasteText, params: { text: 'This text should be italic\n\n' } })
+  Q.add({ func: docsInteraction.toggleItalic, params: [] })
+  Q.add({ func: docsInteraction.pasteText, params: { text: "This text shouldn't be italic\n\n" } })
 
-  // Q.add({ func: docsInteraction.toggleUnderline, params: [] })
-  // Q.add({ func: docsInteraction.pasteText, params: { text: 'This text should be underlined\n\n' } })
-  // Q.add({ func: docsInteraction.toggleUnderline, params: [] })
-  // Q.add({ func: docsInteraction.pasteText, params: { text: "This text shouldn't be underlined\n\n" } })
+  Q.add({ func: docsInteraction.toggleUnderline, params: [] })
+  Q.add({ func: docsInteraction.pasteText, params: { text: 'This text should be underlined\n\n' } })
+  Q.add({ func: docsInteraction.toggleUnderline, params: [] })
+  Q.add({ func: docsInteraction.pasteText, params: { text: "This text shouldn't be underlined\n\n" } })
 
-  // Q.add({ func: docsInteraction.pickColor, params: { color: 'red' } })
-  // Q.add({ func: docsInteraction.pasteText, params: { text: 'This text should be red\n\n' } })
-  // Q.add({ func: docsInteraction.pickColor, params: { color: 'green' } })
-  // Q.add({ func: docsInteraction.pasteText, params: { text: 'This text should be green\n\n' } })
-  // Q.add({ func: docsInteraction.pickColor, params: { color: 'purple' } })
-  // Q.add({ func: docsInteraction.pasteText, params: { text: 'This text should be purple\n\n' } })
-  // Q.add({ func: docsInteraction.pickColor, params: { color: 'black' } })
-  // Q.add({ func: docsInteraction.pasteText, params: { text: 'Back to black\n\n' } })
+  Q.add({ func: docsInteraction.pickColor, params: { color: 'red' } })
+  Q.add({ func: docsInteraction.pasteText, params: { text: 'This text should be red\n\n' } })
+  Q.add({ func: docsInteraction.pickColor, params: { color: 'green' } })
+  Q.add({ func: docsInteraction.pasteText, params: { text: 'This text should be green\n\n' } })
+  Q.add({ func: docsInteraction.pickColor, params: { color: 'purple' } })
+  Q.add({ func: docsInteraction.pasteText, params: { text: 'This text should be purple\n\n' } })
+  Q.add({ func: docsInteraction.pickColor, params: { color: 'black' } })
+  Q.add({ func: docsInteraction.pasteText, params: { text: 'Back to black\n\n' } })
 
-  // Q.add({
-  //   func: docsInteraction.pasteText,
-  //   params: { text: 'aaaaaaAaaaaaaaAaaaaaaaaAaaaaaaaaShouldEndHere->A<-ShouldEndHereaaaaaaaAaaaaaaa' },
-  // })
-  // Q.add({ func: docsInteraction.jumpTo, params: { target: 'A', forward: false, repeat: 2 }, delay: 200 })
-  Q.add({ func: docsInteraction.jumpTo, params: { target: 'A', forward: true, repeat: 1 }, delay: 200 })
+  Q.add({
+    func: docsInteraction.pasteText,
+    params: { text: 'aAaAaAaaShouldEndHere->A<-ShouldEndHereaaAaa' },
+  })
+  Q.add({ func: docsInteraction.jumpTo, params: { target: 'A', forward: false, repeat: 2 }, delay: 200 })
+  // Q.add({ func: docsInteraction.jumpTo, params: { target: 'A', forward: true, repeat: 1 }, delay: 200 })
   Q.add({ func: docsInteraction.pasteText, params: { text: '|I was here|' } })
 
   // Q.add({ func: docsInteraction.pasteText, params: { text: 'no delay 1\n\n' } })
