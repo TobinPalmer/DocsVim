@@ -29,12 +29,24 @@ export default async function test() {
   Q.add({ func: docsInteraction.pickColor, params: { color: 'black' } })
   Q.add({ func: docsInteraction.pasteText, params: { text: 'Back to black\n\n' } })
 
-  Q.add({
-    func: docsInteraction.pasteText,
-    params: { text: 'aAaAaAaaShouldEndHere->A<-ShouldEndHereaaAaa' },
-  })
+  Q.add({ func: docsInteraction.pasteText, params: { text: 'aAaAaAaa->A<-aaAaa' } })
   Q.add({ func: docsInteraction.jumpTo, params: { target: 'A', forward: false, repeat: 2 }, delay: 200 })
-  // Q.add({ func: docsInteraction.jumpTo, params: { target: 'A', forward: true, repeat: 1 }, delay: 200 })
+  Q.add({ func: docsInteraction.pasteText, params: { text: '|I was here|' } })
+
+  Q.add({ func: docsInteraction.pressKey, params: { key: 'ArrowRight', opts: { ctrlKey: true } } })
+  Q.add({ func: docsInteraction.pasteText, params: { text: '\n\n' } })
+
+  Q.add({ func: docsInteraction.pasteText, params: { text: 'aAaAaAaa->A<-aaAaa' } })
+  Q.add({ func: docsInteraction.pressKey, params: { key: 'ArrowLeft', opts: { ctrlKey: true } } })
+  Q.add({ func: docsInteraction.jumpTo, params: { target: 'A', forward: true, repeat: 2 }, delay: 200 })
+
+  Q.add({ func: docsInteraction.pasteText, params: { text: '|I was here|' } })
+  Q.add({ func: docsInteraction.pressKey, params: { key: 'ArrowRight', opts: { ctrlKey: true } } })
+  Q.add({ func: docsInteraction.pasteText, params: { text: '\n\n' } })
+
+  Q.add({ func: docsInteraction.pasteText, params: { text: 'aAaAaAaa->A<-aaAaa' } })
+  Q.add({ func: docsInteraction.pressKey, params: { key: 'ArrowRight', opts: { ctrlKey: true } } })
+  Q.add({ func: docsInteraction.jumpTo, params: { target: 'A', forward: false, repeat: 2 }, delay: 200 })
   Q.add({ func: docsInteraction.pasteText, params: { text: '|I was here|' } })
 
   // Q.add({ func: docsInteraction.pasteText, params: { text: 'no delay 1\n\n' } })

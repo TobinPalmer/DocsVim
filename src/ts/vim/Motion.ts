@@ -18,13 +18,16 @@ export class Motion {
 
     for (const currentKey of this.currentKeys) {
       const key = currentKey.key
-      if (isFunction(currentObject[key])) {
-        ;(currentObject[currentKey.key] as (opts: KeyboardOpts) => void)(currentKey.opts)
+      /**
+       * If the key is a function, call it with the opts
+       */
+      if (isFunction(currentObject[key.toLowerCase()])) {
+        ;(currentObject[key.toLowerCase()] as (opts: KeyboardOpts) => void)(opts)
         this.currentKeys = []
         currentObject = COMMAND_MAP
         return false
       } else {
-        if (typeof currentObject[key] === 'undefined') {
+        if (typeof currentObject[key.toLowerCase()] === 'undefined') {
           this.currentKeys = []
           currentObject = COMMAND_MAP
           return false
@@ -44,6 +47,7 @@ export class Motion {
     } else {
       currentObject = currentObject as CommandMap
     }
+
     return true
   }
 }

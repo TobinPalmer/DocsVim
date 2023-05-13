@@ -1,8 +1,8 @@
 import FormatKey, { type Keys } from '../input/FormatKey'
+
 import { VIM } from '../main'
 import { type Color } from '../types/docTypes'
 import { type KeyboardOpts } from '../types/vimTypes'
-import Vim from '../vim/Vim'
 
 /**
  * This class is used to interact with the google docs page
@@ -17,7 +17,11 @@ export default class docsInteractions {
           altKey: e.altKey,
         }
         // Sends the keydown event to the vim class to handle it
-        if (VIM.vim.keydown(e.key)) e.preventDefault()
+        if (VIM.vim.keydown(e.key, opts)) {
+          e.preventDefault()
+          e.stopPropagation()
+          e.stopImmediatePropagation()
+        }
       })
     })
   }
@@ -39,8 +43,8 @@ export default class docsInteractions {
     const caret = cursor.querySelector('.kix-cursor-caret') as HTMLElement
 
     caret.style.borderWidth = `${width}px`
-    // const cursorColor = `rgba(${isInsertMode ? 0 : 255}, 0, 0, ${isInsertMode ? 1 : 0.5})`
-    const cursorColor = `rgba(0, 0, 0, 0.5)`
+    const cursorColor = `rgba(0, 0, 0, ${isInsertMode ? 1 : 0.5})`
+    // const cursorColor = `rgba(0, 0, 0, 0.5)`
     caret.style.setProperty('border-color', cursorColor, 'important')
     caret.style.mixBlendMode = 'difference'
     return true
@@ -152,7 +156,9 @@ export default class docsInteractions {
         })
       }
     }
-    docsInteractions.pressHTMLElement({ selector: '.modal-dialog-title-close' })
+    docsInteractions.pressHTMLElement({
+      selector: '.modal-dialog-title-close',
+    })
     setTimeout(() => {
       docsInteractions.pressKey({ key: 'ArrowLeft' })
       ;(document.querySelector('.modal-dialog.docs-dialog.docs-findandreplacedialog') as HTMLElement).style.display =

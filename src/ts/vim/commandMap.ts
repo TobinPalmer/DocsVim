@@ -1,18 +1,18 @@
 import docsInteraction from '../docs/docsInteraction'
 import { VIM } from '../main'
-import { type KeyboardOpts, VimMode } from '../types/vimTypes'
+import { VimMode, type KeyboardOpts } from '../types/vimTypes'
 
 export const COMMAND_MAP = Object.freeze({
   insert: {
-    Escape: () => {
+    escape: () => {
       VIM.vim.mode = VimMode.normal
     },
   },
   visualLine: {
-    Backspace: () => null,
-    Space: () => null,
-    Escape: () => null,
-    G: () => null,
+    backspace: () => null,
+    space: () => null,
+    escape: () => null,
+    g: () => null,
     '^': () => null,
     d: () => null,
     h: () => null,
@@ -28,85 +28,73 @@ export const COMMAND_MAP = Object.freeze({
     0: () => null,
     Backspace: {
       visual: () => null,
-      visualLine: () => null,
+      visualline: () => null,
     },
     Space: {
       visual: () => null,
-      visualLine: () => null,
+      visualline: () => null,
     },
     Escape: {
       visual: () => null,
       insert: () => null,
-      visualLine: () => null,
+      visualline: () => null,
     },
     G: {
       visual: () => null,
-      visualLine: () => null,
+      visualline: () => null,
     },
     '^': {
       visual: () => null,
-      visualLine: () => null,
+      visualline: () => null,
     },
     b: () => null,
     c: () => null,
     d: {
       visual: () => null,
-      visualLine: () => null,
+      visualline: () => null,
     },
     e: () => null,
     g: () => null,
     h: {
       visual: () => null,
-      visualLine: () => null,
+      visualline: () => null,
     },
     j: {
       visual: () => null,
-      visualLine: () => null,
+      visualline: () => null,
     },
     k: {
       visual: () => null,
-      visualLine: () => null,
+      visualline: () => null,
     },
     l: {
       visual: () => null,
-      visualLine: () => null,
+      visualline: () => null,
     },
     u: () => null,
     w: {
       visual: () => null,
-      visualLine: () => null,
+      visualline: () => null,
     },
     x: {
       visual: () => null,
-      visualLine: () => null,
+      visualline: () => null,
     },
     y: {
       visual: () => null,
-      visualLine: () => null,
+      visualline: () => null,
     },
   },
   normal: {
     j(opts: KeyboardOpts = {}) {
       const { ctrlKey, shiftKey, altKey } = opts
       if (shiftKey) {
-        VIM.CommandQueue.add({
-          func: docsInteraction.pressKey,
-          params: { key: 'ArrowDown' },
-        })
-        VIM.CommandQueue.add({
-          func: docsInteraction.pressKey,
-          params: { key: 'ArrowLeft', opts: { ctrlKey: true } },
-        })
-        return VIM.CommandQueue.add({
-          func: docsInteraction.pressKey,
-          params: { key: 'Backspace' },
-        })
+        VIM.CommandQueue.add({ func: docsInteraction.pressKey, params: { key: 'ArrowDown' } })
+        VIM.CommandQueue.add({ func: docsInteraction.pressKey, params: { key: 'ArrowLeft', opts: { ctrlKey: true } } })
+        return VIM.CommandQueue.add({ func: docsInteraction.pressKey, params: { key: 'Backspace' } })
       }
       if (!ctrlKey && !altKey && !shiftKey) {
-        return VIM.CommandQueue.add({
-          func: docsInteraction.pressKey,
-          params: { key: 'ArrowDown' },
-        })
+        return VIM.CommandQueue.add({ func: docsInteraction.pressKey, params: { key: 'ArrowDown' } })
       }
     },
     i(opts: KeyboardOpts = {}) {
@@ -163,6 +151,7 @@ export const COMMAND_MAP = Object.freeze({
       return VIM.CommandQueue.add({
         func: docsInteraction.pressKey,
         params: { key: 'ArrowLeft', opts: { altKey: true } },
+        delay: 0,
       })
     },
     e(opts: KeyboardOpts = {}) {
@@ -170,6 +159,48 @@ export const COMMAND_MAP = Object.freeze({
         func: docsInteraction.pressKey,
         params: { key: 'ArrowRight', opts: { altKey: true } },
       })
+    },
+    d: {
+      d: (opts: KeyboardOpts = {}) => {
+        if (opts.mac) {
+          VIM.CommandQueue.add({
+            func: docsInteraction.pressKey,
+            params: { key: 'ArrowRight', opts: { ctrlKey: true } },
+            delay: 0,
+          })
+          VIM.CommandQueue.add({
+            func: docsInteraction.pressKey,
+            params: { key: 'Backspace', opts: { ctrlKey: true } },
+            delay: 0,
+          })
+          VIM.CommandQueue.add({ func: docsInteraction.pressKey, params: { key: 'ArrowDown' }, delay: 0 })
+          VIM.CommandQueue.add({ func: docsInteraction.pressKey, params: { key: 'Backspace' } })
+        } else {
+          VIM.CommandQueue.add({ func: docsInteraction.pressKey, params: { key: 'Home' }, delay: 0 })
+          VIM.CommandQueue.add({
+            func: docsInteraction.pressKey,
+            params: { key: 'End', opts: { shiftKey: true } },
+            delay: 0,
+          })
+          VIM.CommandQueue.add({ func: docsInteraction.pressKey, params: { key: 'Delete' } })
+        }
+      },
+
+      i: {
+        w: () => {
+          VIM.CommandQueue.add({
+            func: docsInteraction.pressKey,
+            params: { key: 'ArrowRight', opts: { altKey: true } },
+          })
+          VIM.CommandQueue.add({
+            func: docsInteraction.pressKey,
+            params: { key: 'ArrowRight', opts: { altKey: true } },
+          })
+        },
+      },
+      a: {
+        w: () => console.log('daw'),
+      },
     },
     b(opts: KeyboardOpts = {}) {
       return VIM.CommandQueue.add({
@@ -190,6 +221,18 @@ export const COMMAND_MAP = Object.freeze({
     },
     y(opts: KeyboardOpts = {}) {
       null
+    },
+    Enter(opts: KeyboardOpts = {}) {
+      return VIM.CommandQueue.add({
+        func: docsInteraction.pressKey,
+        params: { key: 'ArrowDown' },
+      })
+    },
+    Backspace(opts: KeyboardOpts = {}) {
+      return VIM.CommandQueue.add({
+        func: docsInteraction.pressKey,
+        params: { key: 'ArrowLeft' },
+      })
     },
   },
   command: {},

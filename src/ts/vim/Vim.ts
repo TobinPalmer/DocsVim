@@ -20,8 +20,10 @@ export default class Vim {
    * @param mode the mode to set
    */
   public set mode(mode: VimMode) {
-    this._mode = mode
-    VIM.statusline.update()
+    setTimeout(() => {
+      this._mode = mode
+      VIM.statusline.update()
+    }, 0)
 
     switch (mode) {
       case VimMode.normal:
@@ -31,8 +33,7 @@ export default class Vim {
         break
       case VimMode.insert:
         // docsInteractions.setCursorWidth({ width: 1 * docsInteractions.getFontSize() })
-        // console.log('changing to insert mode', docsInteractions.getFontSize())
-        docsInteractions.setCursorWidth({ width: 2 })
+        docsInteractions.setCursorWidth({ width: 2, isInsertMode: true })
         break
     }
   }
@@ -52,8 +53,8 @@ export default class Vim {
    * @param key the key to handle
    */
   public keydown(key: string, opts: KeyboardOpts = {}): boolean {
-    opts.mac = opts.mac ?? this._mode === VimMode.insert
-    console.log(`${this._mode.toUpperCase()}: ${key}`)
+    // opts.mac = opts.mac ?? this._mode === VimMode.insert
+    opts.mac = opts.mac ?? VIM.isMac
     const result = VIM.motion.feedkey(Vim._keyToString(key), opts)
 
     if (this._mode === VimMode.insert) return result
