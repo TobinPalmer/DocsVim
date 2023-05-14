@@ -9,6 +9,7 @@ export enum VimMode {
 
 export interface KeyboardOpts {
   ctrlKey?: boolean
+  metaKey?: boolean
   shiftKey?: boolean
   altKey?: boolean
   mac?: boolean

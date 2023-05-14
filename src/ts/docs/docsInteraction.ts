@@ -13,6 +13,7 @@ export default class docsInteractions {
       target.addEventListener('keydown', (e) => {
         const opts: KeyboardOpts = {
           ctrlKey: e.ctrlKey,
+          metaKey: e.metaKey,
           shiftKey: e.shiftKey,
           altKey: e.altKey,
         }
@@ -182,6 +183,15 @@ export default class docsInteractions {
       selector: `.docs-material-colorpalette-colorswatch[title="${color}"]`,
       clickingMenuItem: true,
     })
+  }
+
+  private static _openUndoMenu(): void {
+    docsInteractions.pressHTMLElement({ selector: '#docs-edit-menu' })
+  }
+
+  public static undo(): void {
+    docsInteractions._openUndoMenu()
+    docsInteractions.pressHTMLElement({ selector: '[id=":72"]', repeat: 2 })
   }
 
   private static _waitForElm({ selector }: { selector: string }): Promise<HTMLElement> {
