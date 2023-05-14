@@ -194,6 +194,11 @@ export default class docsInteractions {
     docsInteractions.pressHTMLElement({ selector: '[id=":72"]', repeat: 2 })
   }
 
+  public static copy(): void {
+    docsInteractions._openUndoMenu()
+    docsInteractions.pressHTMLElement({ selector: '[id=":76"]', repeat: 2 })
+  }
+
   private static _waitForElm({ selector }: { selector: string }): Promise<HTMLElement> {
     return new Promise((resolve) => {
       if (document.querySelector(selector)) return resolve(document.querySelector(selector) as HTMLElement)
