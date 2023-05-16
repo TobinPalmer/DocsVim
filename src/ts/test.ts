@@ -1,53 +1,53 @@
-import docsInteraction from './docs/docsInteraction'
+import docsInteraction from './docs/DocsInteraction'
 import { VIM } from './main'
-export default async function test() {
+export default function test() {
   console.log('starting tests')
-  const Q = VIM.CommandQueue
+  const Queue = VIM.CommandQueue
 
-  Q.add({ func: docsInteraction.pasteText, params: { text: "This text shouldn't be bold\n\n" }, delay: 5 })
-  Q.add({ func: docsInteraction.toggleBold, params: [], delay: 5 })
-  Q.add({ func: docsInteraction.pasteText, params: { text: 'This text should be bold\n\n' }, delay: 5 })
-  Q.add({ func: docsInteraction.toggleBold, params: [] })
-  Q.add({ func: docsInteraction.pasteText, params: { text: "This text shouldn't be bold\n\n" } })
+  Queue.add({ func: docsInteraction.pasteText, params: { text: "This text shouldn't be bold\n\n" }, delay: 5 })
+  Queue.add({ func: docsInteraction.toggleBold, params: [], delay: 5 })
+  Queue.add({ func: docsInteraction.pasteText, params: { text: 'This text should be bold\n\n' }, delay: 5 })
+  Queue.add({ func: docsInteraction.toggleBold, params: [] })
+  Queue.add({ func: docsInteraction.pasteText, params: { text: "This text shouldn't be bold\n\n" } })
 
-  Q.add({ func: docsInteraction.toggleItalic, params: [] })
-  Q.add({ func: docsInteraction.pasteText, params: { text: 'This text should be italic\n\n' } })
-  Q.add({ func: docsInteraction.toggleItalic, params: [] })
-  Q.add({ func: docsInteraction.pasteText, params: { text: "This text shouldn't be italic\n\n" } })
+  Queue.add({ func: docsInteraction.toggleItalic, params: [] })
+  Queue.add({ func: docsInteraction.pasteText, params: { text: 'This text should be italic\n\n' } })
+  Queue.add({ func: docsInteraction.toggleItalic, params: [] })
+  Queue.add({ func: docsInteraction.pasteText, params: { text: "This text shouldn't be italic\n\n" } })
 
-  Q.add({ func: docsInteraction.toggleUnderline, params: [] })
-  Q.add({ func: docsInteraction.pasteText, params: { text: 'This text should be underlined\n\n' } })
-  Q.add({ func: docsInteraction.toggleUnderline, params: [] })
-  Q.add({ func: docsInteraction.pasteText, params: { text: "This text shouldn't be underlined\n\n" } })
+  Queue.add({ func: docsInteraction.toggleUnderline, params: [] })
+  Queue.add({ func: docsInteraction.pasteText, params: { text: 'This text should be underlined\n\n' } })
+  Queue.add({ func: docsInteraction.toggleUnderline, params: [] })
+  Queue.add({ func: docsInteraction.pasteText, params: { text: "This text shouldn't be underlined\n\n" } })
 
-  Q.add({ func: docsInteraction.pickColor, params: { color: 'red' } })
-  Q.add({ func: docsInteraction.pasteText, params: { text: 'This text should be red\n\n' } })
-  Q.add({ func: docsInteraction.pickColor, params: { color: 'green' } })
-  Q.add({ func: docsInteraction.pasteText, params: { text: 'This text should be green\n\n' } })
-  Q.add({ func: docsInteraction.pickColor, params: { color: 'purple' } })
-  Q.add({ func: docsInteraction.pasteText, params: { text: 'This text should be purple\n\n' } })
-  Q.add({ func: docsInteraction.pickColor, params: { color: 'black' } })
-  Q.add({ func: docsInteraction.pasteText, params: { text: 'Back to black\n\n' } })
+  Queue.add({ func: docsInteraction.pickColor, params: { color: 'red' } })
+  Queue.add({ func: docsInteraction.pasteText, params: { text: 'This text should be red\n\n' } })
+  Queue.add({ func: docsInteraction.pickColor, params: { color: 'green' } })
+  Queue.add({ func: docsInteraction.pasteText, params: { text: 'This text should be green\n\n' } })
+  Queue.add({ func: docsInteraction.pickColor, params: { color: 'purple' } })
+  Queue.add({ func: docsInteraction.pasteText, params: { text: 'This text should be purple\n\n' } })
+  Queue.add({ func: docsInteraction.pickColor, params: { color: 'black' } })
+  Queue.add({ func: docsInteraction.pasteText, params: { text: 'Back to black\n\n' } })
 
-  Q.add({ func: docsInteraction.pasteText, params: { text: 'aAaAaAaa->A<-aaAaa' } })
-  Q.add({ func: docsInteraction.jumpTo, params: { target: 'A', forward: false, repeat: 2 }, delay: 200 })
-  Q.add({ func: docsInteraction.pasteText, params: { text: '|I was here|' } })
+  Queue.add({ func: docsInteraction.pasteText, params: { text: 'aAaAaAaa->A<-aaAaa' } })
+  Queue.add({ func: docsInteraction.jumpTo, params: { target: 'A', forward: false, repeat: 2 }, delay: 200 })
+  Queue.add({ func: docsInteraction.pasteText, params: { text: '|I was here|' } })
 
-  Q.add({ func: docsInteraction.pressKey, params: { key: 'ArrowRight', opts: { ctrlKey: true } } })
-  Q.add({ func: docsInteraction.pasteText, params: { text: '\n\n' } })
+  Queue.add({ func: docsInteraction.pressKey, params: { key: 'ArrowRight', opts: { ctrlKey: true } } })
+  Queue.add({ func: docsInteraction.pasteText, params: { text: '\n\n' } })
 
-  Q.add({ func: docsInteraction.pasteText, params: { text: 'aAaAaAaa->A<-aaAaa' } })
-  Q.add({ func: docsInteraction.pressKey, params: { key: 'ArrowLeft', opts: { ctrlKey: true } } })
-  Q.add({ func: docsInteraction.jumpTo, params: { target: 'A', forward: true, repeat: 2 }, delay: 200 })
+  Queue.add({ func: docsInteraction.pasteText, params: { text: 'aAaAaAaa->A<-aaAaa' } })
+  Queue.add({ func: docsInteraction.pressKey, params: { key: 'ArrowLeft', opts: { ctrlKey: true } } })
+  Queue.add({ func: docsInteraction.jumpTo, params: { target: 'A', forward: true, repeat: 2 }, delay: 200 })
 
-  Q.add({ func: docsInteraction.pasteText, params: { text: '|I was here|' } })
-  Q.add({ func: docsInteraction.pressKey, params: { key: 'ArrowRight', opts: { ctrlKey: true } } })
-  Q.add({ func: docsInteraction.pasteText, params: { text: '\n\n' } })
+  Queue.add({ func: docsInteraction.pasteText, params: { text: '|I was here|' } })
+  Queue.add({ func: docsInteraction.pressKey, params: { key: 'ArrowRight', opts: { ctrlKey: true } } })
+  Queue.add({ func: docsInteraction.pasteText, params: { text: '\n\n' } })
 
-  Q.add({ func: docsInteraction.pasteText, params: { text: 'aAaAaAaa->A<-aaAaa' } })
-  Q.add({ func: docsInteraction.pressKey, params: { key: 'ArrowRight', opts: { ctrlKey: true } } })
-  Q.add({ func: docsInteraction.jumpTo, params: { target: 'A', forward: false, repeat: 2 }, delay: 200 })
-  Q.add({ func: docsInteraction.pasteText, params: { text: '|I was here|' } })
+  Queue.add({ func: docsInteraction.pasteText, params: { text: 'aAaAaAaa->A<-aaAaa' } })
+  Queue.add({ func: docsInteraction.pressKey, params: { key: 'ArrowRight', opts: { ctrlKey: true } } })
+  Queue.add({ func: docsInteraction.jumpTo, params: { target: 'A', forward: false, repeat: 2 }, delay: 200 })
+  Queue.add({ func: docsInteraction.pasteText, params: { text: '|I was here|' } })
 
   // Q.add({ func: docsInteraction.pasteText, params: { text: 'no delay 1\n\n' } })
   // Q.add({ func: docsInteraction.pasteText, params: { text: 'no delay 2\n\n' } })

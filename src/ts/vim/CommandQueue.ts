@@ -41,11 +41,13 @@ export default class CommandQueue {
    * @param command The object of the command to add
    */
   public add<T extends CommandFunction>(command: CommandParams<T> & { delay?: number }): void {
-    command.delay ??= 5 // default delay of 5ms
+    // default delay of 5ms
+    command.delay ??= 5
+    // add the command to the stack
+    this.commandStack.push(command as Command)
 
-    this.commandStack.push(command as Command) // add the command to the stack
-
-    if (this.delayTimer === null) this.runCommands() // If there is no current delay, run the commands
+    // If there is no current delay, run the commands
+    if (this.delayTimer === null) this.runCommands()
   }
 
   /**
@@ -61,10 +63,13 @@ export default class CommandQueue {
     // If there are no commands, return
     if (this.commandStack.length === 0) return
 
-    const nextCommand = this.commandStack.shift() // Get the next command
-    if (nextCommand === undefined) return // If there is no next command, return
+    // Get the next command
+    const nextCommand = this.commandStack.shift()
+    // If there is no next command, return
+    if (typeof nextCommand === 'undefined') return
 
-    nextCommand.func(nextCommand.params) // Run the command
+    // Run the command
+    nextCommand.func(nextCommand.params)
 
     // Set a new delay timer that will run the next command when finished
     this.delayTimer = setTimeout(() => {

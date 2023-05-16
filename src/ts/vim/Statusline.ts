@@ -1,6 +1,7 @@
 import { VIM } from '../main'
 
 export default class Statusline {
+  // eslint-disable-next-line no-use-before-define
   private static _instance: Statusline
   private elem: HTMLDivElement = document.createElement('div')
   private cssElem: HTMLStyleElement = document.createElement('style')

@@ -1,10 +1,11 @@
+// eslint-disable-next-line no-shadow
 export enum VimMode {
-  'normal' = 'normal',
-  'insert' = 'insert',
-  'visual' = 'visual',
-  'visualLine' = 'visualLine',
-  'command' = 'command',
-  'running' = 'running',
+  'normal' = 'NORMAL',
+  'insert' = 'INSERT',
+  'visual' = 'VISUAL',
+  'visualLine' = 'VISUAL_LINE',
+  'command' = 'COMMAND',
+  'running' = 'RUNNING',
 }
 
 export interface KeyboardOpts {

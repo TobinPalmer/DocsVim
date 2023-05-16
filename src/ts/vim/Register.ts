@@ -7,16 +7,17 @@ interface RegisterContent {
  * Register class handles the vim clipboard which is seperate from the system clipboard
  */
 export default class Register {
+  // eslint-disable-next-line no-use-before-define
   private static _instance: Register
   private registerContent: RegisterContent[]
 
-  public async getClipboardContent() {
-    return await navigator.clipboard.readText()
+  public static getClipboardContent() {
+    return navigator.clipboard.readText()
   }
 
   private constructor() {
     this.registerContent = [{ name: '*', content: '' }]
-    this.getClipboardContent().then((content) => (this.registerContent[0].content = content))
+    Register.getClipboardContent().then((content) => (this.registerContent[0].content = content))
   }
 
   public static get Instance() {

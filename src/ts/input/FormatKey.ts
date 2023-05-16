@@ -2,8 +2,6 @@ interface nonNormalKeys {
   ctrl: string
 }
 
-export type Keys = typeof keysList & nonNormalKeys
-
 const keysList = Object.freeze({
   A: 'A',
   B: 'B',
@@ -70,6 +68,8 @@ const keysList = Object.freeze({
   Enter: 'Enter',
   Escape: 'Escape',
 })
+
+export type Keys = typeof keysList & nonNormalKeys
 
 const getKeys = (mac?: boolean): Keys => {
   return {

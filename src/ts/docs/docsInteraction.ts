@@ -1,27 +1,26 @@
-import FormatKey, { type Keys } from '../input/FormatKey'
-
+import FormatKey, { Keys } from '../input/FormatKey'
 import { VIM } from '../main'
-import { type Color } from '../types/docTypes'
-import { type KeyboardOpts } from '../types/vimTypes'
+import { Color } from '../types/docTypes'
+import { KeyboardOpts } from '../types/vimTypes'
 
 /**
  * This class is used to interact with the google docs page
  */
-export default class docsInteractions {
+export default class DocsInteractions {
   constructor() {
-    docsInteractions.textTarget().then((target) => {
-      target.addEventListener('keydown', (e) => {
+    DocsInteractions.textTarget().then((target) => {
+      target.addEventListener('keydown', (event) => {
         const opts: KeyboardOpts = {
-          ctrlKey: e.ctrlKey,
-          metaKey: e.metaKey,
-          shiftKey: e.shiftKey,
-          altKey: e.altKey,
+          ctrlKey: event.ctrlKey,
+          metaKey: event.metaKey,
+          shiftKey: event.shiftKey,
+          altKey: event.altKey,
         }
         // Sends the keydown event to the vim class to handle it
-        if (VIM.vim.keydown(e.key, opts)) {
-          e.preventDefault()
-          e.stopPropagation()
-          e.stopImmediatePropagation()
+        if (VIM.vim.keydown(event.key, opts)) {
+          event.preventDefault()
+          event.stopPropagation()
+          event.stopImmediatePropagation()
         }
       })
     })
@@ -30,6 +29,7 @@ export default class docsInteractions {
   public static getFontSize(): number {
     return parseInt(
       (document.querySelector('[id=":16"] .goog-toolbar-combo-button-input.jfk-textinput') as HTMLInputElement).value,
+      10,
     )
   }
 
@@ -38,13 +38,15 @@ export default class docsInteractions {
    * @param isInsertMode changes the color of the cursor depending on mode.
    */
   public static setCursorWidth({ width, isInsertMode }: { width: number; isInsertMode?: boolean }) {
+    console.log("Changing the cursor's style")
     const cursor = this.getUserCursor
 
     if (cursor === null) return false
     const caret = cursor.querySelector('.kix-cursor-caret') as HTMLElement
 
     caret.style.borderWidth = `${width}px`
-    const cursorColor = `rgba(0, 0, 0, ${isInsertMode ? 1 : 0.5})`
+    const HALF_OPACITY = 0.5
+    const cursorColor = `rgba(0, 0, 0, ${isInsertMode ? 1 : HALF_OPACITY})`
     // const cursorColor = `rgba(0, 0, 0, 0.5)`
     caret.style.setProperty('border-color', cursorColor, 'important')
     caret.style.mixBlendMode = 'difference'
@@ -58,17 +60,78 @@ export default class docsInteractions {
   static get getUserCursor(): Element | null {
     let cursor: Element | null = null
 
-    document.querySelectorAll('.kix-cursor').forEach((el) => {
-      const caretColor = el.querySelector('.kix-cursor-caret')
+    document.querySelectorAll('.kix-cursor').forEach((element) => {
+      const caretColor = element.querySelector('.kix-cursor-caret')
       if (caretColor === null) return
 
-      const cursorName = (el.querySelector('.kix-cursor-name')?.textContent ?? '').trim()
+      const cursorName = (element.querySelector('.kix-cursor-name')?.textContent ?? '').trim()
 
-      if (cursorName.length <= 0) cursor = el
+      if (cursorName.length <= 0) cursor = element
     })
     if (cursor !== null) return cursor
 
     return document.querySelector('.kix-cursor')
+  }
+
+  public static deleteLines({
+    mac,
+    repeat,
+    direction,
+    endsOnEmptyLine = true,
+  }: {
+    mac?: boolean
+    repeat?: number
+    direction: 'up' | 'down'
+    endsOnEmptyLine?: boolean
+  }): void {
+    mac ??= VIM.isMac
+    if (mac) {
+      if (direction === 'up') {
+        VIM.CommandQueue.add({
+          func: DocsInteractions.pressKey,
+          params: { key: 'ArrowRight', opts: { ctrlKey: true } },
+          delay: 0,
+        })
+        VIM.CommandQueue.add({
+          func: DocsInteractions.pressKey,
+          params: { key: 'ArrowLeft', opts: { shiftKey: true, ctrlKey: true } },
+          delay: 0,
+        })
+        VIM.CommandQueue.add({
+          func: DocsInteractions.pressKey,
+          params: { key: 'ArrowUp', opts: { shiftKey: true }, repeat },
+          delay: 0,
+        })
+        VIM.CommandQueue.add({
+          func: DocsInteractions.pressKey,
+          params: { key: 'Backspace', opts: { ctrlKey: true } },
+          delay: 0,
+        })
+        if (!endsOnEmptyLine) {
+          VIM.CommandQueue.add({
+            func: DocsInteractions.pressKey,
+            params: { key: 'ArrowDown' },
+            delay: 0,
+          })
+          VIM.CommandQueue.add({
+            func: DocsInteractions.pressKey,
+            params: { key: 'Backspace' },
+            delay: 0,
+          })
+        }
+      } else {
+        VIM.CommandQueue.add({
+          func: DocsInteractions.pressKey,
+          params: { key: 'ArrowDown', repeat },
+          delay: 0,
+        })
+        VIM.CommandQueue.add({
+          func: DocsInteractions.pressKey,
+          params: { key: 'ArrowUp', opts: { shiftKey: true }, repeat },
+          delay: 0,
+        })
+      }
+    }
   }
 
   /**
@@ -82,20 +145,20 @@ export default class docsInteractions {
     key: keyof Keys
     opts?: KeyboardOpts
     repeat?: number
-  }): typeof docsInteractions {
+  }): typeof DocsInteractions {
     opts.mac = opts.mac ?? VIM.isMac
     const element = (document.getElementsByClassName('docs-texteventtarget-iframe')[0] as HTMLIFrameElement)
       .contentDocument as Document
     if (!element) return this
 
-    const keyMapper = Object.freeze({
+    const keyMapper = {
       ArrowUp: 38,
       ArrowDown: 40,
       ArrowLeft: 37,
       ArrowRight: 39,
       Backspace: 8,
       Enter: 13,
-    })
+    } as const
 
     const event = new KeyboardEvent('keydown', {
       keyCode: keyMapper[key as keyof typeof keyMapper] || null,
@@ -125,8 +188,8 @@ export default class docsInteractions {
     repeat?: number
   }): void {
     // Return exesively long repeats
-    if (repeat > 1000 || target.length > 1) return
-    docsInteractions.pressHTMLElement({
+    if (repeat > VIM.VARIABLES.EXCESSIVE_REPEAT || target.length > 1) return
+    DocsInteractions.pressHTMLElement({
       selector: '.goog-menuitem.apps-menuitem[id=":7d"]',
       clickingMenuItem: false,
       repeat: 2,
@@ -145,58 +208,58 @@ export default class docsInteractions {
     if (forward) {
       for (let i = 1; i < repeat; ++i) {
         console.log('clicking next')
-        docsInteractions.pressHTMLElement({
+        DocsInteractions.pressHTMLElement({
           selector: '#docs-findandreplacedialog-button-next',
         })
       }
     } else {
       for (let i = 1; i < repeat + 1; i++) {
         console.log('clicking previous')
-        docsInteractions.pressHTMLElement({
+        DocsInteractions.pressHTMLElement({
           selector: '#docs-findandreplacedialog-button-previous',
         })
       }
     }
-    docsInteractions.pressHTMLElement({
+    DocsInteractions.pressHTMLElement({
       selector: '.modal-dialog-title-close',
     })
+    const CLOSING_ANIMATION_TIME = 175
     setTimeout(() => {
-      docsInteractions.pressKey({ key: 'ArrowLeft' })
+      DocsInteractions.pressKey({ key: 'ArrowLeft' })
       ;(document.querySelector('.modal-dialog.docs-dialog.docs-findandreplacedialog') as HTMLElement).style.display =
         'block'
-    }, 175)
-    return
+    }, CLOSING_ANIMATION_TIME)
   }
 
   private static _openColorMenu(): void {
-    docsInteractions.pressHTMLElement({ selector: '#textColorButton' })
+    DocsInteractions.pressHTMLElement({ selector: '#textColorButton' })
   }
 
   private static _openHighlightMenu(): void {
-    docsInteractions.pressHTMLElement({ selector: '#bgColorButton' })
+    DocsInteractions.pressHTMLElement({ selector: '#bgColorButton' })
   }
 
   public static pickColor({ color }: { color: Color }): void {
-    docsInteractions._openColorMenu()
+    DocsInteractions._openColorMenu()
 
-    docsInteractions.pressHTMLElement({
+    DocsInteractions.pressHTMLElement({
       selector: `.docs-material-colorpalette-colorswatch[title="${color}"]`,
       clickingMenuItem: true,
     })
   }
 
   private static _openUndoMenu(): void {
-    docsInteractions.pressHTMLElement({ selector: '#docs-edit-menu' })
+    DocsInteractions.pressHTMLElement({ selector: '#docs-edit-menu' })
   }
 
   public static undo(): void {
-    docsInteractions._openUndoMenu()
-    docsInteractions.pressHTMLElement({ selector: '[id=":72"]', repeat: 2 })
+    DocsInteractions._openUndoMenu()
+    DocsInteractions.pressHTMLElement({ selector: '[id=":72"]', repeat: 2 })
   }
 
   public static copy(): void {
-    docsInteractions._openUndoMenu()
-    docsInteractions.pressHTMLElement({ selector: '[id=":76"]', repeat: 2 })
+    DocsInteractions._openUndoMenu()
+    DocsInteractions.pressHTMLElement({ selector: '[id=":76"]', repeat: 2 })
   }
 
   private static _waitForElm({ selector }: { selector: string }): Promise<HTMLElement> {
@@ -210,7 +273,7 @@ export default class docsInteractions {
         }
       })
 
-      observer.observe(document.body, {
+      return observer.observe(document.body, {
         childList: true,
         subtree: true,
       })
@@ -229,40 +292,36 @@ export default class docsInteractions {
   }
 
   public static pickHighlight({ color }: { color: Color | 'none' }): void {
-    docsInteractions._openHighlightMenu()
+    DocsInteractions._openHighlightMenu()
     if (color === 'none') {
-      docsInteractions.pressHTMLElement({
+      DocsInteractions.pressHTMLElement({
         selector: '.goog-menuitem.colormenuitems-no-color',
         clickingMenuItem: true,
       })
       return
     }
-    docsInteractions.pressHTMLElement({
+    DocsInteractions.pressHTMLElement({
       selector: `.goog-menu.goog-menu-vertical.docs-colormenuitems.docs-material.goog-menu-noaccel [id=":b1"] + .docs-material-colorpalette .docs-material-colorpalette-colorswatch[title="${color}"]`,
       clickingMenuItem: true,
     })
   }
 
   public static toggleBold() {
-    docsInteractions.pressKey({
+    DocsInteractions.pressKey({
       key: 'b',
       opts: { ctrlKey: true, shiftKey: false, mac: VIM.isMac },
     })
-    // VIM.CommandQueue.add({
-    //   command: docsInteractions.pressKey,
-    //   params: { key: 'b', opts: { ctrlKey: true, shiftKey: false, mac: VIM.isMac } },
-    // })
   }
 
   public static toggleItalic() {
-    docsInteractions.pressKey({
+    DocsInteractions.pressKey({
       key: 'i',
       opts: { ctrlKey: true, shiftKey: false, mac: VIM.isMac },
     })
   }
 
   public static toggleUnderline() {
-    docsInteractions.pressKey({
+    DocsInteractions.pressKey({
       key: 'u',
       opts: { ctrlKey: true, shiftKey: false, mac: VIM.isMac },
     })
@@ -304,8 +363,8 @@ export default class docsInteractions {
     }
   }
 
-  public static pasteText({ text }: { text: string }): typeof docsInteractions {
-    const el = (
+  public static pasteText({ text }: { text: string }): typeof DocsInteractions {
+    const element = (
       (document.getElementsByClassName('docs-texteventtarget-iframe')[0] as HTMLIFrameElement)
         .contentDocument as Document
     ).querySelector('[contenteditable=true]') as HTMLElement
@@ -316,7 +375,7 @@ export default class docsInteractions {
     const paste = new ClipboardEvent('paste', { clipboardData: data })
     if (paste.clipboardData !== null) paste.clipboardData.setData('text/plain', text)
 
-    el.dispatchEvent(paste)
+    element.dispatchEvent(paste)
 
     return this
   }

@@ -1,6 +1,6 @@
-import docsInteractions from '../docs/docsInteraction'
+import DocsInteractions from '../docs/DocsInteraction'
 import { VIM } from '../main'
-import { type KeyboardOpts, VimMode } from '../types/vimTypes'
+import { VimMode, type KeyboardOpts } from '../types/vimTypes'
 
 /**
  * Vim class that handles different vim modes and input
@@ -29,11 +29,13 @@ export default class Vim {
       case VimMode.normal:
       case VimMode.visual:
       case VimMode.visualLine:
-        docsInteractions.setCursorWidth({ width: docsInteractions.getFontSize() / 2 })
+        DocsInteractions.setCursorWidth({ width: DocsInteractions.getFontSize() / 2 })
         break
       case VimMode.insert:
         // docsInteractions.setCursorWidth({ width: 1 * docsInteractions.getFontSize() })
-        docsInteractions.setCursorWidth({ width: 2, isInsertMode: true })
+        DocsInteractions.setCursorWidth({ width: 2, isInsertMode: true })
+        break
+      default:
         break
     }
   }
@@ -54,7 +56,7 @@ export default class Vim {
    */
   public keydown(key: string, opts: KeyboardOpts = {}): boolean {
     // opts.mac = opts.mac ?? this._mode === VimMode.insert
-    opts.mac = opts.mac ?? VIM.isMac
+    opts.mac ??= VIM.isMac
     const result = VIM.motion.feedkey(Vim._keyToString(key), opts)
 
     if (this._mode === VimMode.insert) return result

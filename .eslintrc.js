@@ -4,7 +4,14 @@ module.exports = {
     sourceType: 'module',
   },
 
-  extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended', 'plugin:prettier/recommended', 'prettier'],
+  extends: [
+    'eslint:recommended',
+    'strict',
+    'strict/es6',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:prettier/recommended',
+    'prettier',
+  ],
   plugins: ['@typescript-eslint', 'prettier'],
 
   env: {
@@ -26,7 +33,12 @@ module.exports = {
         printWidth: 120,
       },
     ],
-    eqeqeq: ['warn', 'always'],
+    'no-process-env': 'off',
+    'no-console': 'off',
+    'func-style': 'off',
+    'id-blacklist': 'off',
+    'no-underscore-dangle': 'off',
+    'filenames/match-regex': [2, '^[.a-zA-Z_]+$', true],
   },
 
   ignorePatterns: ['dist/**/*'],
