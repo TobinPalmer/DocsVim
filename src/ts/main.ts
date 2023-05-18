@@ -1,5 +1,5 @@
 import DocsInteraction from './docs/DocsInteraction'
-import test from './test'
+// import test from './test'
 import CommandQueue from './vim/CommandQueue'
 import { Motion } from './vim/Motion'
 import Register from './vim/Register'
