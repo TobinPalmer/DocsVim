@@ -1,5 +1,5 @@
 import DocsInteraction from './docs/DocsInteraction'
-// import test from './test'
+import test from './test'
 import CommandQueue from './vim/CommandQueue'
 import { Motion } from './vim/Motion'
 import Register from './vim/Register'
@@ -9,24 +9,26 @@ import VimBuffer from './vim/VimBuffer'
 
 export const VIM = {
   isMac: navigator.userAgent.indexOf('MAC') >= 0 || navigator.platform.toUpperCase().indexOf('MAC') >= 0,
-  vim: new Vim(),
+  Vim: new Vim(),
   interactions: new DocsInteraction(),
   VimBuffer: new VimBuffer(),
   CommandQueue: new CommandQueue(),
-  motion: new Motion(),
-  register: Register.Instance,
-  statusline: Statusline.Instance,
+  Motion: new Motion(),
+  Register: Register.Instance,
+  Statusline: Statusline.Instance,
 
   VARIABLES: {
     EXCESSIVE_REPEAT: 2000,
   } as const,
 } as const
 
-VIM.statusline.update()
+VIM.Statusline.update()
 
-// VIM.register
+const START_DELAY = 0
 
-// test()
+setTimeout(() => {
+  test()
+}, START_DELAY)
 
 // VIM.motion.feedkey('normal')
 // VIM.motion.feedkey('d')
