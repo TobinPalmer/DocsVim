@@ -1,7 +1,7 @@
 import FormatKey, { Keys } from '../input/FormatKey'
 import { VIM } from '../main'
-import { Color } from '../types/docTypes'
-import { KeyboardOpts } from '../types/vimTypes'
+import { type Color } from '../types/docTypes'
+import { type KeyboardOpts } from '../types/vimTypes'
 
 /**
  * This class is used to interact with the google docs page

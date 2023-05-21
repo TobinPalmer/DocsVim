@@ -17,6 +17,9 @@ export default class Statusline {
     return this._instance || (this._instance = new this())
   }
 
+  /**
+   * Updates the statusline
+   */
   public update(): void {
     this.elem.innerHTML = `
     -- ${VIM.Vim.mode} --

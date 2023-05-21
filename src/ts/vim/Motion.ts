@@ -1,6 +1,6 @@
 import { Keys } from '../input/FormatKey'
 import { VIM } from '../main'
-import { KeyboardOpts, VimBreakCodes } from '../types/vimTypes'
+import { type KeyboardOpts, VimBreakCodes } from '../types/vimTypes'
 import { COMMAND_MAP } from './commandMap'
 
 interface CommandMap {
@@ -79,6 +79,7 @@ export class Motion {
   // eslint-disable-next-line complexity
   public feedkey(originalKey: keyof Keys, opts: KeyboardOpts = {}): boolean {
     if (this._shouldRepeat(originalKey)) {
+      console.log('should repeat')
       this._repeat += originalKey
       return false
     }
@@ -97,12 +98,14 @@ export class Motion {
       if (isFunction(currentObject[currentKey.key.toLowerCase()])) {
         const repeat = parseInt(this._repeat, 10) || 1
 
+        console.log('before call')
         const func = (
           currentObject[currentKey.key.toLowerCase()] as unknown as (
             options: KeyboardOpts & { repeat?: number },
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ) => (...args: any[]) => void
         )({ ...opts, repeat })
+        console.log('after call', Motion._functionReturnsBreakCode(func))
 
         // Clicked a key that requires keys after, ex f requires a target like fa to jump to a
         if (Motion._functionReturnsBreakCode(func) && this._needsAfterKeys.status === true) {
