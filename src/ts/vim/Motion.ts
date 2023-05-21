@@ -23,8 +23,8 @@ const isFunction = (fun: unknown): fun is (...args: any[]) => void => typeof fun
 
 export class Motion {
   /** Keys that have been pressed in a sequence until a motion is found */
+  private readonly _afterKeys: { key: keyof Keys; opts: KeyboardOpts }[] = []
   private _currentKeys: { key: keyof Keys; opts: KeyboardOpts }[] = []
-  private _afterKeys: { key: keyof Keys; opts: KeyboardOpts }[] = []
   private _repeat = ''
   private _needsAfterKeys: needsAfterKeys = { status: false, requiredKeys: 0 }
 

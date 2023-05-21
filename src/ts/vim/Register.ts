@@ -9,7 +9,7 @@ interface RegisterContent {
 export default class Register {
   // eslint-disable-next-line no-use-before-define
   private static _instance: Register
-  private registerContent: RegisterContent[]
+  private readonly registerContent: RegisterContent[]
 
   public static getClipboardContent() {
     return navigator.clipboard.readText()

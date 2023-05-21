@@ -29,7 +29,7 @@ export default class CommandQueue {
   /**
    * The list of commands to be executed, commands are added, executed, and removed from the list in order
    */
-  private commandStack: Command[] = []
+  private readonly commandStack: Command[] = []
 
   /**
    * The timer that is used to delay the execution of commands

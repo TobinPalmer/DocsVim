@@ -3,8 +3,8 @@ import { VIM } from '../main'
 export default class Statusline {
   // eslint-disable-next-line no-use-before-define
   private static _instance: Statusline
-  private elem: HTMLDivElement = document.createElement('div')
-  private cssElem: HTMLStyleElement = document.createElement('style')
+  private readonly elem: HTMLDivElement = document.createElement('div')
+  private readonly cssElem: HTMLStyleElement = document.createElement('style')
 
   private constructor() {
     this.elem.classList.add('statusline')
@@ -23,7 +23,7 @@ export default class Statusline {
     `
   }
 
-  private css = `
+  private readonly css = `
     .statusline {
         position: fixed;
         bottom: 0;
