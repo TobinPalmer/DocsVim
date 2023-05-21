@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Keys } from '../input/FormatKey'
 import { VIM } from '../main'
-import { type KeyboardOpts, VimBreakCodes } from '../types/vimTypes'
+import { VimBreakCodes, type KeyboardOpts } from '../types/vimTypes'
 import { COMMAND_MAP } from './commandMap'
 
 interface CommandMap {
@@ -17,11 +18,9 @@ export type needsAfterKeys = Partial<{
   requiredKeys: number
 }>
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const isFunction = (fun: unknown): fun is (...args: any[]) => void => typeof fun === 'function'
-// Try g?w
 
-export class Motion {
+export default class Motion {
   /** Keys that have been pressed in a sequence until a motion is found */
   private readonly _afterKeys: { key: keyof Keys; opts: KeyboardOpts }[] = []
   private _currentKeys: { key: keyof Keys; opts: KeyboardOpts }[] = []
@@ -47,31 +46,35 @@ export class Motion {
     this._repeat = ''
   }
 
+  private readonly map: { [k: string]: any } = {}
+
   /**
    * Checks if a function returns a break code
    * Functions like `f` return a break code because they need characters after them
    */
-  private static _functionReturnsBreakCode(func: (...args: unknown[]) => void): func is () => VimBreakCodesReturnType {
+  private _functionReturnsBreakCode(func: any): func is VimBreakCodesReturnType {
+    // console.log('Testing for Break code', func)
+    console.log('this is the map', this.map)
     if (typeof func === 'undefined') return false
+    if (this.map[func.code] === true) return true
+
     // Checks if the functions return type contains { code: string, required: number}
-    function codeInFunc(testFunction: (...args: unknown[]) => void): testFunction is () => VimBreakCodesReturnType {
+    const codeInFunc = (testFunction: any): testFunction is VimBreakCodesReturnType => {
+      if (typeof testFunction === 'undefined' || testFunction === null) return false
       if (
         'code' in testFunction &&
         'required' in testFunction &&
         typeof testFunction.code === 'string' &&
         typeof testFunction.required === 'number'
       ) {
-        console.log('passed')
+        this.map[testFunction.code] = true
         return true
       }
       return false
     }
 
-    if (codeInFunc(func)) {
-      if (Object.values(VimBreakCodes).includes(func().code)) {
-        return true
-      }
-    }
+    if (codeInFunc(func) && Object.values(VimBreakCodes).includes(func.code)) return true
+
     return false
   }
 
@@ -79,7 +82,6 @@ export class Motion {
   // eslint-disable-next-line complexity
   public feedkey(originalKey: keyof Keys, opts: KeyboardOpts = {}): boolean {
     if (this._shouldRepeat(originalKey)) {
-      console.log('should repeat')
       this._repeat += originalKey
       return false
     }
@@ -98,32 +100,27 @@ export class Motion {
       if (isFunction(currentObject[currentKey.key.toLowerCase()])) {
         const repeat = parseInt(this._repeat, 10) || 1
 
-        console.log('before call')
         const func = (
           currentObject[currentKey.key.toLowerCase()] as unknown as (
             options: KeyboardOpts & { repeat?: number },
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ) => (...args: any[]) => void
         )({ ...opts, repeat })
-        console.log('after call', Motion._functionReturnsBreakCode(func))
 
         // Clicked a key that requires keys after, ex f requires a target like fa to jump to a
-        if (Motion._functionReturnsBreakCode(func) && this._needsAfterKeys.status === true) {
+        if (this._functionReturnsBreakCode(func) && this._needsAfterKeys.status === true) {
           console.log('gg')
           this._afterKeys.push({ opts, key: originalKey })
         }
-
-        console.log('cool', Motion._functionReturnsBreakCode(func))
         // Has pressed a key which requires after keys and is now waiting for the next keys
-        if (Motion._functionReturnsBreakCode(func) && this._needsAfterKeys.status === false) {
+        if (this._functionReturnsBreakCode(func) && this._needsAfterKeys.status === false) {
           console.log('cool kid alert')
+
           // this.firstTimeCalled = false
-          this._needsAfterKeys = { status: true, requiredKeys: func().required }
+          this._needsAfterKeys = { status: true, requiredKeys: func.required }
           return false
         }
-
         // If the function is called but doesn't return a break code, reset the state
-        if (!Motion._functionReturnsBreakCode(func)) this._resetState()
+        if (!this._functionReturnsBreakCode(func)) this._resetState()
       }
 
       // If the currentObject[key] is undefined, then we need to reset the state

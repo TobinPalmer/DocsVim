@@ -1,4 +1,4 @@
-import docsInteraction from './docs/DocsInteraction'
+import docsInteraction from './docs/DocsInteractions'
 import { VIM } from './main'
 import CommandQueue from './vim/CommandQueue'
 

@@ -1,4 +1,4 @@
-import DocsInteractions from '../docs/DocsInteraction'
+import DocsInteractions from '../docs/DocsInteractions'
 import { VIM } from '../main'
 import { VimBreakCodes, VimMode, type KeyboardOpts } from '../types/vimTypes'
 

@@ -1,7 +1,7 @@
-import DocsInteraction from './docs/DocsInteraction'
+import DocsInteractions from './docs/DocsInteractions'
 import test from './test'
 import CommandQueue from './vim/CommandQueue'
-import { Motion } from './vim/Motion'
+import Motion from './vim/Motion'
 import Register from './vim/Register'
 import Statusline from './vim/Statusline'
 import Vim from './vim/Vim'
@@ -10,7 +10,7 @@ import VimBuffer from './vim/VimBuffer'
 export const VIM = {
   isMac: navigator.userAgent.includes('MAC') || navigator.platform.toUpperCase().includes('MAC'),
   Vim: new Vim(),
-  interactions: new DocsInteraction(),
+  interactions: new DocsInteractions(),
   VimBuffer: new VimBuffer(),
   CommandQueue: new CommandQueue(),
   Motion: new Motion(),
