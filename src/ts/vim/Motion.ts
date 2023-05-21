@@ -18,14 +18,16 @@ export type needsAfterKeys = Partial<{
   requiredKeys: number
 }>
 
+// Checks if a variable is a function
 const isFunction = (fun: unknown): fun is (...args: any[]) => void => typeof fun === 'function'
 
 export default class Motion {
   /** Keys that have been pressed in a sequence until a motion is found */
-  private readonly _afterKeys: { key: keyof Keys; opts: KeyboardOpts }[] = []
+  private _afterKeys: { key: keyof Keys; opts: KeyboardOpts }[] = []
   private _currentKeys: { key: keyof Keys; opts: KeyboardOpts }[] = []
   private _repeat = ''
   private _needsAfterKeys: needsAfterKeys = { status: false, requiredKeys: 0 }
+  private _originalOpts: KeyboardOpts = {}
 
   /**
    * Detects if a key should repeat.
@@ -43,6 +45,8 @@ export default class Motion {
    */
   private _resetState() {
     this._currentKeys = []
+    this._afterKeys = []
+    this._needsAfterKeys = { status: false, requiredKeys: 0 }
     this._repeat = ''
   }
 
@@ -53,8 +57,6 @@ export default class Motion {
    * Functions like `f` return a break code because they need characters after them
    */
   private _functionReturnsBreakCode(func: any): func is VimBreakCodesReturnType {
-    // console.log('Testing for Break code', func)
-    console.log('this is the map', this.map)
     if (typeof func === 'undefined') return false
     if (this.map[func.code] === true) return true
 
@@ -86,9 +88,14 @@ export default class Motion {
       return false
     }
 
-    if (this._needsAfterKeys.status === true) {
-      console.log('needs keys')
-    }
+    // if (
+    //   this._needsAfterKeys.status === true &&
+    //   this._needsAfterKeys.requiredKeys &&
+    //   this._afterKeys.length < this._needsAfterKeys.requiredKeys
+    // ) {
+    //   this._afterKeys.push({ opts, key: originalKey })
+    //   return false
+    // }
 
     this._currentKeys.push({ key: originalKey, opts })
 
@@ -108,14 +115,22 @@ export default class Motion {
 
         // Clicked a key that requires keys after, ex f requires a target like fa to jump to a
         if (this._functionReturnsBreakCode(func) && this._needsAfterKeys.status === true) {
-          console.log('gg')
           this._afterKeys.push({ opts, key: originalKey })
+          if (this._afterKeys.length === func.required) {
+            ;(
+              currentObject[currentKey.key.toLowerCase()] as unknown as (
+                options: KeyboardOpts & { repeat?: number },
+              ) => (...args: any[]) => void
+            )({ ...this._originalOpts, afterKeys: this._afterKeys, repeat })
+            this._resetState()
+            return true
+          }
+          return false
         }
+
         // Has pressed a key which requires after keys and is now waiting for the next keys
         if (this._functionReturnsBreakCode(func) && this._needsAfterKeys.status === false) {
-          console.log('cool kid alert')
-
-          // this.firstTimeCalled = false
+          this._originalOpts = opts
           this._needsAfterKeys = { status: true, requiredKeys: func.required }
           return false
         }

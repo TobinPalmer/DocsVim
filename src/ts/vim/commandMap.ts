@@ -80,18 +80,18 @@ export const COMMAND_MAP = Object.freeze({
   },
   NORMAL: {
     f(opts: KeyboardCommand = {}) {
-      console.log('calling f with', opts.afterKeys)
       if (opts.afterKeys) {
         if (opts.shiftKey) {
+          console.log('shift key')
           VIM.CommandQueue.add({
             func: DocsInteractions.jumpTo,
-            params: { target: opts.afterKeys[0].key, forward: false },
+            params: { target: opts.afterKeys[0].key, forward: false, repeat: opts.repeat },
             delay: 175,
           })
         } else {
           VIM.CommandQueue.add({
             func: DocsInteractions.jumpTo,
-            params: { target: opts.afterKeys[0].key },
+            params: { target: opts.afterKeys[0].key, forward: true, repeat: opts.repeat },
             delay: 175,
           })
         }
