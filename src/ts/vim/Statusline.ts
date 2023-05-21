@@ -19,7 +19,7 @@ export default class Statusline {
 
   public update(): void {
     this.elem.innerHTML = `
-    -- ${VIM.vim.mode} --
+    -- ${VIM.Vim.mode} --
     `
   }
 

@@ -2,7 +2,7 @@ interface nonNormalKeys {
   ctrl: string
 }
 
-const keysList = Object.freeze({
+const keysList = {
   A: 'A',
   B: 'B',
   C: 'C',
@@ -67,7 +67,7 @@ const keysList = Object.freeze({
   PageUp: 'PageUp',
   Enter: 'Enter',
   Escape: 'Escape',
-})
+} as const
 
 export type Keys = typeof keysList & nonNormalKeys
 

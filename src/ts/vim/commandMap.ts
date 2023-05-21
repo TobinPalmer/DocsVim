@@ -1,27 +1,27 @@
 import DocsInteractions from '../docs/DocsInteraction'
 import { VIM } from '../main'
-import { VimMode, type KeyboardOpts } from '../types/vimTypes'
+import { VimBreakCodes, VimMode, type KeyboardOpts } from '../types/vimTypes'
 
 type KeyboardCommand = KeyboardOpts & { repeat?: number }
 
 export const COMMAND_MAP = Object.freeze({
   INSERT: {
     escape() {
-      VIM.vim.mode = VimMode.normal
+      VIM.Vim.mode = VimMode.normal
     },
   },
   VISUAL_LINE: {},
   VISUAL: {
-    escape(opts: KeyboardCommand = {}) {
-      VIM.vim.mode = VimMode.normal
+    escape() {
+      VIM.Vim.mode = VimMode.normal
     },
-    b(opts: KeyboardCommand = {}) {
+    b() {
       return VIM.CommandQueue.add({
         func: DocsInteractions.pressKey,
         params: { key: 'ArrowLeft', opts: { altKey: true, shiftKey: true } },
       })
     },
-    w(opts: KeyboardCommand = {}) {
+    w() {
       VIM.CommandQueue.add({
         func: DocsInteractions.pressKey,
         params: { key: 'ArrowRight', opts: { altKey: true, shiftKey: true } },
@@ -38,31 +38,31 @@ export const COMMAND_MAP = Object.freeze({
         delay: 0,
       })
     },
-    h(opts: KeyboardCommand = {}) {
+    h() {
       VIM.CommandQueue.add({
         func: DocsInteractions.pressKey,
         params: { key: 'ArrowLeft', opts: { shiftKey: true } },
       })
     },
-    k(opts: KeyboardCommand = {}) {
+    k() {
       VIM.CommandQueue.add({
         func: DocsInteractions.pressKey,
         params: { key: 'ArrowUp', opts: { shiftKey: true } },
       })
     },
-    j(opts: KeyboardCommand = {}) {
+    j() {
       VIM.CommandQueue.add({
         func: DocsInteractions.pressKey,
         params: { key: 'ArrowDown', opts: { shiftKey: true } },
       })
     },
-    l(opts: KeyboardCommand = {}) {
+    l() {
       VIM.CommandQueue.add({
         func: DocsInteractions.pressKey,
         params: { key: 'ArrowRight', opts: { shiftKey: true } },
       })
     },
-    y(opts: KeyboardCommand = {}) {
+    y() {
       VIM.CommandQueue.add({
         func: DocsInteractions.copy,
         params: [],
@@ -79,6 +79,25 @@ export const COMMAND_MAP = Object.freeze({
     },
   },
   NORMAL: {
+    f(opts: KeyboardCommand = {}) {
+      console.log('calling f with', opts.afterKeys)
+      if (opts.afterKeys) {
+        if (opts.shiftKey) {
+          VIM.CommandQueue.add({
+            func: DocsInteractions.jumpTo,
+            params: { target: opts.afterKeys[0].key, forward: false },
+            delay: 175,
+          })
+        } else {
+          VIM.CommandQueue.add({
+            func: DocsInteractions.jumpTo,
+            params: { target: opts.afterKeys[0].key },
+            delay: 175,
+          })
+        }
+      }
+      return { code: VimBreakCodes.find, required: 1 }
+    },
     j(opts: KeyboardCommand = {}) {
       const { ctrlKey, shiftKey, altKey } = opts
       if (shiftKey) {
@@ -95,14 +114,26 @@ export const COMMAND_MAP = Object.freeze({
       return false
     },
     i(opts: KeyboardCommand = {}) {
-      VIM.vim.mode = VimMode.insert
+      if (opts.shiftKey) {
+        VIM.CommandQueue.add({
+          func: DocsInteractions.pressKey,
+          params: { key: 'ArrowLeft', opts: { ctrlKey: true } },
+        })
+      }
+      VIM.Vim.mode = VimMode.insert
     },
     a(opts: KeyboardCommand = {}) {
       VIM.CommandQueue.add({
         func: DocsInteractions.pressKey,
-        params: { key: 'ArrowRight', repeat: opts.repeat },
+        params: { key: 'ArrowRight' },
       })
-      VIM.vim.mode = VimMode.insert
+      if (opts.shiftKey) {
+        VIM.CommandQueue.add({
+          func: DocsInteractions.pressKey,
+          params: { key: 'ArrowRight', opts: { ctrlKey: true } },
+        })
+      }
+      VIM.Vim.mode = VimMode.insert
     },
     $(opts: KeyboardCommand = {}) {
       VIM.CommandQueue.add({
@@ -168,7 +199,7 @@ export const COMMAND_MAP = Object.freeze({
             params: { key: 'Backspace', opts: { ctrlKey: true } },
             delay: 0,
           })
-          VIM.vim.mode = VimMode.insert
+          VIM.Vim.mode = VimMode.insert
         } else {
           VIM.CommandQueue.add({ func: DocsInteractions.pressKey, params: { key: 'Home' }, delay: 0 })
           VIM.CommandQueue.add({
@@ -177,7 +208,7 @@ export const COMMAND_MAP = Object.freeze({
             delay: 0,
           })
           VIM.CommandQueue.add({ func: DocsInteractions.pressKey, params: { key: 'Delete' } })
-          VIM.vim.mode = VimMode.insert
+          VIM.Vim.mode = VimMode.insert
         }
       },
       i: {
@@ -201,7 +232,7 @@ export const COMMAND_MAP = Object.freeze({
             func: DocsInteractions.pressKey,
             params: { key: 'Backspace' },
           })
-          VIM.vim.mode = VimMode.insert
+          VIM.Vim.mode = VimMode.insert
         },
       },
       a: {
@@ -225,224 +256,48 @@ export const COMMAND_MAP = Object.freeze({
             func: DocsInteractions.pressKey,
             params: { key: 'Backspace' },
           })
-          VIM.vim.mode = VimMode.insert
+          VIM.Vim.mode = VimMode.insert
         },
       },
       k(opts: KeyboardCommand = {}) {
         VIM.CommandQueue.add({
           func: DocsInteractions.deleteLines,
-          params: { direction: 'up' },
+          params: { direction: 'up', mac: opts.mac, endsOnEmptyLine: true },
           delay: 0,
         })
-        // if (opts.mac) {
-        //   VIM.CommandQueue.add({
-        //     func: docsInteractions.pressKey,
-        //     params: { key: 'ArrowRight', opts: { ctrlKey: true } },
-        //     delay: 0,
-        //   })
-        //   VIM.CommandQueue.add({
-        //     func: docsInteractions.pressKey,
-        //     params: { key: 'ArrowLeft', opts: { shiftKey: true, ctrlKey: true } },
-        //     delay: 0,
-        //   })
-        //   VIM.CommandQueue.add({
-        //     func: docsInteractions.pressKey,
-        //     params: { key: 'ArrowUp', opts: { shiftKey: true } },
-        //     delay: 0,
-        //   })
-        //   VIM.CommandQueue.add({
-        //     func: docsInteractions.pressKey,
-        //     params: { key: 'Backspace', opts: { ctrlKey: true } },
-        //     delay: 0,
-        //   })
-        // } else {
-        //   VIM.CommandQueue.add({ func: docsInteractions.pressKey, params: { key: 'End' }, delay: 0 })
-        //   VIM.CommandQueue.add({
-        //     func: docsInteractions.pressKey,
-        //     params: { key: 'Home', opts: { shiftKey: true } },
-        //     delay: 0,
-        //   })
-        //   VIM.CommandQueue.add({
-        //     func: docsInteractions.pressKey,
-        //     params: { key: 'ArrowUp', opts: { shiftKey: true } },
-        //     delay: 0,
-        //   })
-        //   VIM.CommandQueue.add({ func: docsInteractions.pressKey, params: { key: 'Delete' } })
-        // }
-        VIM.vim.mode = VimMode.insert
+        VIM.Vim.mode = VimMode.insert
       },
       j(opts: KeyboardCommand = {}) {
-        if (opts.mac) {
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'ArrowDown' },
-            delay: 0,
-          })
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'ArrowRight', opts: { ctrlKey: true } },
-            delay: 0,
-          })
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'ArrowLeft', opts: { shiftKey: true, ctrlKey: true } },
-            delay: 0,
-          })
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'ArrowUp', opts: { shiftKey: true } },
-            delay: 0,
-          })
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'Backspace', opts: { ctrlKey: true } },
-            delay: 0,
-          })
-        } else {
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'ArrowDown' },
-            delay: 0,
-          })
-          VIM.CommandQueue.add({ func: DocsInteractions.pressKey, params: { key: 'End' }, delay: 0 })
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'Home', opts: { shiftKey: true } },
-            delay: 0,
-          })
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'ArrowUp', opts: { shiftKey: true } },
-            delay: 0,
-          })
-          VIM.CommandQueue.add({ func: DocsInteractions.pressKey, params: { key: 'Delete' } })
-        }
-        VIM.vim.mode = VimMode.insert
+        VIM.CommandQueue.add({
+          func: DocsInteractions.deleteLines,
+          params: { direction: 'down', mac: opts.mac, endsOnEmptyLine: true },
+          delay: 0,
+        })
+        VIM.Vim.mode = VimMode.insert
       },
     },
     d: {
       k(opts: KeyboardCommand = {}) {
-        if (opts.mac) {
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'ArrowRight', opts: { ctrlKey: true } },
-            delay: 0,
-          })
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'ArrowLeft', opts: { shiftKey: true, ctrlKey: true } },
-            delay: 0,
-          })
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'ArrowUp', opts: { shiftKey: true } },
-            delay: 0,
-          })
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'Backspace', opts: { ctrlKey: true } },
-            delay: 0,
-          })
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'ArrowDown', opts: { shiftKey: true } },
-            delay: 0,
-          })
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'Backspace', opts: { ctrlKey: true } },
-          })
-        } else {
-          VIM.CommandQueue.add({ func: DocsInteractions.pressKey, params: { key: 'End' }, delay: 0 })
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'Home', opts: { shiftKey: true } },
-            delay: 0,
-          })
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'ArrowUp', opts: { shiftKey: true } },
-            delay: 0,
-          })
-          VIM.CommandQueue.add({ func: DocsInteractions.pressKey, params: { key: 'Delete' }, delay: 0 })
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'ArrowDown', opts: { shiftKey: true } },
-            delay: 0,
-          })
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'Backspace', opts: { ctrlKey: true } },
-          })
-        }
+        VIM.CommandQueue.add({
+          func: DocsInteractions.deleteLines,
+          params: { direction: 'up', mac: opts.mac, endsOnEmptyLine: false, repeat: opts.repeat },
+          delay: 0,
+        })
       },
       j(opts: KeyboardCommand = {}) {
-        if (opts.mac) {
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'ArrowDown' },
-            delay: 0,
-          })
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'ArrowRight', opts: { ctrlKey: true } },
-            delay: 0,
-          })
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'ArrowLeft', opts: { shiftKey: true, ctrlKey: true } },
-            delay: 0,
-          })
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'ArrowUp', opts: { shiftKey: true } },
-            delay: 0,
-          })
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'Backspace', opts: { ctrlKey: true } },
-            delay: 0,
-          })
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'ArrowDown', opts: { shiftKey: true } },
-            delay: 0,
-          })
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'Backspace', opts: { ctrlKey: true } },
-          })
-        } else {
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'ArrowDown' },
-            delay: 0,
-          })
-          VIM.CommandQueue.add({ func: DocsInteractions.pressKey, params: { key: 'End' }, delay: 0 })
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'Home', opts: { shiftKey: true } },
-            delay: 0,
-          })
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'ArrowUp', opts: { shiftKey: true } },
-            delay: 0,
-          })
-          VIM.CommandQueue.add({ func: DocsInteractions.pressKey, params: { key: 'Delete' }, delay: 0 })
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'ArrowDown', opts: { shiftKey: true } },
-            delay: 0,
-          })
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'Delete', opts: { ctrlKey: true } },
-          })
-        }
+        VIM.CommandQueue.add({
+          func: DocsInteractions.deleteLines,
+          params: { direction: 'down', mac: opts.mac, endsOnEmptyLine: false, repeat: opts.repeat },
+          delay: 0,
+        })
       },
-      d: (opts: KeyboardCommand = {}) => {
+      d(opts: KeyboardCommand = {}) {
         if (opts.mac) {
+          VIM.CommandQueue.add({
+            func: DocsInteractions.pasteText,
+            params: { text: 'x' },
+            delay: 0,
+          })
           VIM.CommandQueue.add({
             func: DocsInteractions.pressKey,
             params: { key: 'ArrowRight', opts: { ctrlKey: true } },
@@ -467,11 +322,7 @@ export const COMMAND_MAP = Object.freeze({
       },
       i: {
         w() {
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pasteText,
-            params: { text: 'x' },
-            delay: 0,
-          })
+          VIM.CommandQueue.add({ func: DocsInteractions.pasteText, params: { text: 'x' }, delay: 0 })
           VIM.CommandQueue.add({
             func: DocsInteractions.pressKey,
             params: { key: 'ArrowLeft', opts: { altKey: true } },
@@ -482,10 +333,7 @@ export const COMMAND_MAP = Object.freeze({
             params: { key: 'ArrowRight', opts: { altKey: true, shiftKey: true } },
             delay: 0,
           })
-          return VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'Backspace' },
-          })
+          return VIM.CommandQueue.add({ func: DocsInteractions.pressKey, params: { key: 'Backspace' } })
         },
       },
       a: {
@@ -512,23 +360,19 @@ export const COMMAND_MAP = Object.freeze({
         },
       },
     },
-    v: (opts: KeyboardCommand = {}) => {
-      VIM.vim.mode = VimMode.visual
+    v: () => {
+      VIM.Vim.mode = VimMode.visual
     },
-    u(opts: KeyboardCommand = {}) {
-      return VIM.CommandQueue.add({
-        func: DocsInteractions.undo,
-        params: [],
-        delay: 0,
-      })
+    u() {
+      return VIM.CommandQueue.add({ func: DocsInteractions.undo, params: [], delay: 0 })
     },
     b(opts: KeyboardCommand = {}) {
       return VIM.CommandQueue.add({
         func: DocsInteractions.pressKey,
-        params: { key: 'ArrowLeft', opts: { altKey: true } },
+        params: { key: 'ArrowLeft', opts: { altKey: true }, repeat: opts.repeat },
       })
     },
-    x(opts: KeyboardCommand = {}) {
+    x() {
       VIM.CommandQueue.add({
         func: DocsInteractions.pressKey,
         params: { key: 'ArrowRight' },
@@ -539,20 +383,20 @@ export const COMMAND_MAP = Object.freeze({
         params: { key: 'Backspace' },
       })
     },
-    y(opts: KeyboardCommand = {}) {
+    y() {
       return VIM.CommandQueue.add({
         func: DocsInteractions.copy,
         params: [],
         delay: 0,
       })
     },
-    Enter(opts: KeyboardCommand = {}) {
+    Enter() {
       return VIM.CommandQueue.add({
         func: DocsInteractions.pressKey,
         params: { key: 'ArrowDown' },
       })
     },
-    Backspace(opts: KeyboardCommand = {}) {
+    Backspace() {
       return VIM.CommandQueue.add({
         func: DocsInteractions.pressKey,
         params: { key: 'ArrowLeft' },

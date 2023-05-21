@@ -38,6 +38,7 @@ module.exports = {
     'func-style': 'off',
     'id-blacklist': 'off',
     'no-underscore-dangle': 'off',
+    '@typescript-eslint/no-use-before-define': 'error',
     'filenames/match-regex': [2, '^[.a-zA-Z_]+$', true],
   },
 

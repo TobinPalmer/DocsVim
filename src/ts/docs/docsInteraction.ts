@@ -17,7 +17,7 @@ export default class DocsInteractions {
           altKey: event.altKey,
         }
         // Sends the keydown event to the vim class to handle it
-        if (VIM.vim.keydown(event.key, opts)) {
+        if (VIM.Vim.keydown(event.key, opts)) {
           event.preventDefault()
           event.stopPropagation()
           event.stopImmediatePropagation()
@@ -26,6 +26,9 @@ export default class DocsInteractions {
     })
   }
 
+  /**
+   * Returns the font size of the google doc
+   */
   public static getFontSize(): number {
     return parseInt(
       (document.querySelector('[id=":16"] .goog-toolbar-combo-button-input.jfk-textinput') as HTMLInputElement).value,
@@ -73,6 +76,33 @@ export default class DocsInteractions {
     return document.querySelector('.kix-cursor')
   }
 
+  public static clearDocument({ mac }: { mac?: boolean }): void {
+    mac ??= VIM.isMac
+    if (mac) {
+      VIM.CommandQueue.add({
+        func: DocsInteractions.pressKey,
+        params: { key: 'ArrowUp', opts: { ctrlKey: true, mac: true } },
+        delay: 0,
+      })
+      VIM.CommandQueue.add({
+        func: DocsInteractions.pressKey,
+        params: { key: 'ArrowDown', opts: { ctrlKey: true, mac: true, shiftKey: true } },
+        delay: 0,
+      })
+      VIM.CommandQueue.add({
+        func: DocsInteractions.pressKey,
+        params: { key: 'Backspace' },
+      })
+    }
+  }
+
+  /**
+   * Deletes Lines relative to the cursor
+   * @param mac if the user is on a mac
+   * @param repeat how many lines to delete
+   * @param direction the direction to delete in
+   * @param endsOnEmptyLine if the cursor should end on an empty line
+   */
   public static deleteLines({
     mac,
     repeat,
@@ -127,15 +157,61 @@ export default class DocsInteractions {
         })
         VIM.CommandQueue.add({
           func: DocsInteractions.pressKey,
+          params: { key: 'ArrowRight', opts: { ctrlKey: true } },
+          delay: 0,
+        })
+        VIM.CommandQueue.add({
+          func: DocsInteractions.pressKey,
+          params: { key: 'ArrowLeft', opts: { shiftKey: true, ctrlKey: true } },
+          delay: 0,
+        })
+        VIM.CommandQueue.add({
+          func: DocsInteractions.pressKey,
           params: { key: 'ArrowUp', opts: { shiftKey: true }, repeat },
           delay: 0,
         })
+        VIM.CommandQueue.add({
+          func: DocsInteractions.pressKey,
+          params: { key: 'Backspace', opts: { ctrlKey: true } },
+          delay: 0,
+        })
+        if (endsOnEmptyLine) {
+          VIM.CommandQueue.add({
+            func: DocsInteractions.pressKey,
+            params: { key: 'Backspace', opts: { ctrlKey: true } },
+            delay: 0,
+          })
+          VIM.CommandQueue.add({
+            func: DocsInteractions.pressKey,
+            params: { key: 'Enter' },
+            delay: 0,
+          })
+        } else {
+          VIM.CommandQueue.add({
+            func: DocsInteractions.pressKey,
+            params: { key: 'Backspace', opts: { ctrlKey: true } },
+            delay: 0,
+          })
+          VIM.CommandQueue.add({
+            func: DocsInteractions.pressKey,
+            params: { key: 'ArrowDown' },
+            delay: 0,
+          })
+          VIM.CommandQueue.add({
+            func: DocsInteractions.pressKey,
+            params: { key: 'ArrowLeft', opts: { ctrlKey: true } },
+            delay: 0,
+          })
+        }
       }
     }
   }
 
   /**
    * Presses a key (not types a letter)
+   * @param key the key to press
+   * @param opts the options for the key
+   * @param repeat how many times to repeat the key
    */
   public static pressKey({
     key,
@@ -158,6 +234,8 @@ export default class DocsInteractions {
       ArrowRight: 39,
       Backspace: 8,
       Enter: 13,
+      Home: 36,
+      End: 35,
     } as const
 
     const event = new KeyboardEvent('keydown', {
@@ -172,6 +250,7 @@ export default class DocsInteractions {
     for (let i = 0; i < repeat; i++) element.dispatchEvent(event)
     return this
   }
+
   /**
    * Jumps to a letter, either forward or backward
    * @param target The letter to jump to
@@ -187,8 +266,10 @@ export default class DocsInteractions {
     forward?: boolean
     repeat?: number
   }): void {
+    console.log(`Jumping to ${target}`)
     // Return exesively long repeats
     if (repeat > VIM.VARIABLES.EXCESSIVE_REPEAT || target.length > 1) return
+    console.log(`works`, target)
     DocsInteractions.pressHTMLElement({
       selector: '.goog-menuitem.apps-menuitem[id=":7d"]',
       clickingMenuItem: false,
@@ -199,46 +280,73 @@ export default class DocsInteractions {
       (document.querySelector('#docs-findandreplacedialog-match-case') as HTMLElement).getAttribute('aria-checked') ===
       'false'
     ) {
-      console.log('clicking match case')
       ;(document.querySelector('#docs-findandreplacedialog-match-case') as HTMLElement).click()
     }
 
-    ;(document.querySelector('.modal-dialog.docs-dialog.docs-findandreplacedialog') as HTMLElement).style.display =
-      'none'
+    // ;(document.querySelector('.modal-dialog.docs-dialog.docs-findandreplacedialog') as HTMLElement).style.setProperty(
+    //   'opacity',
+    //   '0',
+    //   'important',
+    // )
+    // ;(document.querySelector('.modal-dialog.docs-dialog.docs-findandreplacedialog') as HTMLElement).style.display =
+    //   'none'
     if (forward) {
       for (let i = 1; i < repeat; ++i) {
-        console.log('clicking next')
         DocsInteractions.pressHTMLElement({
           selector: '#docs-findandreplacedialog-button-next',
         })
       }
     } else {
       for (let i = 1; i < repeat + 1; i++) {
-        console.log('clicking previous')
         DocsInteractions.pressHTMLElement({
           selector: '#docs-findandreplacedialog-button-previous',
         })
       }
     }
-    DocsInteractions.pressHTMLElement({
-      selector: '.modal-dialog-title-close',
-    })
-    const CLOSING_ANIMATION_TIME = 175
+    const ARROW_DELAY_TIME = 200
+    const PRESS_X_TIME = 250
+    const ARROW_DELAY = PRESS_X_TIME + ARROW_DELAY_TIME
+
+    setTimeout(() => {
+      console.log('pressing', document.querySelector('.modal-dialog-title-close') as HTMLElement)
+      ;(document.querySelector('.modal-dialog.docs-dialog.docs-findandreplacedialog') as HTMLElement).style.display =
+        'none'
+      DocsInteractions.pressHTMLElement({
+        selector: '.modal-dialog-title-close',
+      })
+    }, PRESS_X_TIME)
     setTimeout(() => {
       DocsInteractions.pressKey({ key: 'ArrowLeft' })
-      ;(document.querySelector('.modal-dialog.docs-dialog.docs-findandreplacedialog') as HTMLElement).style.display =
-        'block'
-    }, CLOSING_ANIMATION_TIME)
+      ;(document.querySelector('.modal-dialog.docs-dialog.docs-findandreplacedialog') as HTMLElement).style.opacity =
+        '1'
+    }, ARROW_DELAY)
   }
 
+  /**
+   * Opens the color menu
+   */
   private static _openColorMenu(): void {
     DocsInteractions.pressHTMLElement({ selector: '#textColorButton' })
   }
 
+  /**
+   * Opens the highlights menu
+   */
   private static _openHighlightMenu(): void {
     DocsInteractions.pressHTMLElement({ selector: '#bgColorButton' })
   }
 
+  /**
+   * Opens the undo menu
+   */
+  private static _openUndoMenu(): void {
+    DocsInteractions.pressHTMLElement({ selector: '#docs-edit-menu' })
+  }
+
+  /**
+   * Picks a highlight color
+   * @param color the color to pick
+   */
   public static pickColor({ color }: { color: Color }): void {
     DocsInteractions._openColorMenu()
 
@@ -248,20 +356,25 @@ export default class DocsInteractions {
     })
   }
 
-  private static _openUndoMenu(): void {
-    DocsInteractions.pressHTMLElement({ selector: '#docs-edit-menu' })
-  }
-
+  /**
+   * Undoes the last action
+   */
   public static undo(): void {
     DocsInteractions._openUndoMenu()
     DocsInteractions.pressHTMLElement({ selector: '[id=":72"]', repeat: 2 })
   }
 
+  /**
+   * Copies the selected text to your system clipboard
+   */
   public static copy(): void {
     DocsInteractions._openUndoMenu()
     DocsInteractions.pressHTMLElement({ selector: '[id=":76"]', repeat: 2 })
   }
 
+  /**
+   * Waits for element to exist, then runs callback
+   */
   private static _waitForElm({ selector }: { selector: string }): Promise<HTMLElement> {
     return new Promise((resolve) => {
       if (document.querySelector(selector)) return resolve(document.querySelector(selector) as HTMLElement)
@@ -280,6 +393,9 @@ export default class DocsInteractions {
     })
   }
 
+  /**
+   * Gets the google docs text target
+   */
   public static get textTarget(): () => Promise<HTMLElement> {
     return async () =>
       (
@@ -291,6 +407,9 @@ export default class DocsInteractions {
       ).activeElement as HTMLElement
   }
 
+  /**
+   * Gets the google docs text target
+   */
   public static pickHighlight({ color }: { color: Color | 'none' }): void {
     DocsInteractions._openHighlightMenu()
     if (color === 'none') {
@@ -306,6 +425,9 @@ export default class DocsInteractions {
     })
   }
 
+  /**
+   * Toggles Bold
+   */
   public static toggleBold() {
     DocsInteractions.pressKey({
       key: 'b',
@@ -313,6 +435,9 @@ export default class DocsInteractions {
     })
   }
 
+  /**
+   * Toggles Italic
+   */
   public static toggleItalic() {
     DocsInteractions.pressKey({
       key: 'i',
@@ -320,6 +445,9 @@ export default class DocsInteractions {
     })
   }
 
+  /**
+   * Toggles Underline
+   */
   public static toggleUnderline() {
     DocsInteractions.pressKey({
       key: 'u',
@@ -327,6 +455,12 @@ export default class DocsInteractions {
     })
   }
 
+  /**
+   * Presses on an HTML element.
+   * @param selector the selector to press
+   * @param clickingMenuItem whether or not the element is a menu item
+   * @param repeat the number of times to repeat the action
+   */
   public static pressHTMLElement({
     selector,
     clickingMenuItem = false,
@@ -363,6 +497,10 @@ export default class DocsInteractions {
     }
   }
 
+  /**
+   * Pastes text into the google docs text target
+   * @param text the selector to press
+   */
   public static pasteText({ text }: { text: string }): typeof DocsInteractions {
     const element = (
       (document.getElementsByClassName('docs-texteventtarget-iframe')[0] as HTMLIFrameElement)

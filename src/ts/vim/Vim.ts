@@ -22,7 +22,7 @@ export default class Vim {
   public set mode(mode: VimMode) {
     setTimeout(() => {
       this._mode = mode
-      VIM.statusline.update()
+      VIM.Statusline.update()
     }, 0)
 
     switch (mode) {
@@ -57,7 +57,7 @@ export default class Vim {
   public keydown(key: string, opts: KeyboardOpts = {}): boolean {
     // opts.mac = opts.mac ?? this._mode === VimMode.insert
     opts.mac ??= VIM.isMac
-    const result = VIM.motion.feedkey(Vim._keyToString(key), opts)
+    const result = VIM.Motion.feedkey(Vim._keyToString(key), opts)
 
     if (this._mode === VimMode.insert) return result
 
