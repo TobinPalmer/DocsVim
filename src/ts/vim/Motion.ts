@@ -34,7 +34,7 @@ export default class Motion {
    */
   private _shouldRepeat(key: string) {
     if (this._currentKeys.length === 0 && /[0-9]/.exec(key)) {
-      if (this._repeat === '' && key === '0') return true
+      if (this._repeat === '' && key === '0') return false
       return true
     }
     return false
@@ -88,21 +88,13 @@ export default class Motion {
       return false
     }
 
-    // if (
-    //   this._needsAfterKeys.status === true &&
-    //   this._needsAfterKeys.requiredKeys &&
-    //   this._afterKeys.length < this._needsAfterKeys.requiredKeys
-    // ) {
-    //   this._afterKeys.push({ opts, key: originalKey })
-    //   return false
-    // }
-
     this._currentKeys.push({ key: originalKey, opts })
 
     let currentObject: CommandMap = COMMAND_MAP[VIM.Vim.mode]
 
     // Loop through all the keys
     for (const currentKey of this._currentKeys) {
+      console.log(currentKey.key.toLowerCase())
       // If the currentObject[key] is a function, call it with the opts
       if (isFunction(currentObject[currentKey.key.toLowerCase()])) {
         const repeat = parseInt(this._repeat, 10) || 1
