@@ -8,22 +8,26 @@ import { KeyboardOpts } from '../types/vimTypes'
  */
 export default class DocsInteractions {
   constructor() {
-    DocsInteractions.textTarget().then((target) => {
-      target.addEventListener('keydown', (event) => {
-        const opts: KeyboardOpts = {
-          ctrlKey: event.ctrlKey,
-          metaKey: event.metaKey,
-          shiftKey: event.shiftKey,
-          altKey: event.altKey,
-        }
-        // Sends the keydown event to the vim class to handle it
-        if (VIM.Vim.keydown(event.key, opts)) {
-          event.preventDefault()
-          event.stopPropagation()
-          event.stopImmediatePropagation()
-        }
+    DocsInteractions.textTarget()
+      .then((target) => {
+        target.addEventListener('keydown', (event) => {
+          const opts: KeyboardOpts = {
+            ctrlKey: event.ctrlKey,
+            metaKey: event.metaKey,
+            shiftKey: event.shiftKey,
+            altKey: event.altKey,
+          }
+          // Sends the keydown event to the vim class to handle it
+          if (VIM.Vim.keydown(event.key, opts)) {
+            event.preventDefault()
+            event.stopPropagation()
+            event.stopImmediatePropagation()
+          }
+        })
       })
-    })
+      .catch((err) => {
+        throw new Error(err)
+      })
   }
 
   /**
@@ -76,6 +80,10 @@ export default class DocsInteractions {
     return document.querySelector('.kix-cursor')
   }
 
+  /**
+   * Clears the document of all text
+   * @param mac if the user is on a mac
+   */
   public static clearDocument({ mac }: { mac?: boolean }): void {
     mac ??= VIM.isMac
     if (mac) {
@@ -269,7 +277,6 @@ export default class DocsInteractions {
     console.log(`Jumping to ${target}`)
     // Return exesively long repeats
     if (repeat > VIM.VARIABLES.EXCESSIVE_REPEAT || target.length > 1) return
-    console.log(`works`, target)
     DocsInteractions.pressHTMLElement({
       selector: '.goog-menuitem.apps-menuitem[id=":7d"]',
       clickingMenuItem: false,

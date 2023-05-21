@@ -71,15 +71,27 @@ const keysList = {
 
 export type Keys = typeof keysList & nonNormalKeys
 
-const getKeys = (mac?: boolean): Keys => {
-  return {
-    ...keysList,
-    ctrl: mac ? 'Meta' : 'Control',
-  } as const
+/**
+ * Format util that formats keys to the correct platform.
+ */
+const Format = {
+  /**
+   * Formats a key to the correct platform.
+   */
+  format(key: keyof Keys, mac = false): keyof Keys {
+    return this._getKeys(mac)[key] as keyof Keys
+  },
+
+  /**
+   * Returns the keys for the current platform.
+   * @private
+   */
+  _getKeys(mac?: boolean): Keys {
+    return {
+      ...keysList,
+      ctrl: mac ? 'Meta' : 'Control',
+    } as const
+  },
 }
 
-export default class FormatKey {
-  public static format(key: keyof Keys, mac = false): keyof Keys {
-    return getKeys(mac)[key] as keyof Keys
-  }
-}
+export default Format

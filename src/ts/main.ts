@@ -8,7 +8,7 @@ import Vim from './vim/Vim'
 import VimBuffer from './vim/VimBuffer'
 
 export const VIM = {
-  isMac: navigator.userAgent.indexOf('MAC') >= 0 || navigator.platform.toUpperCase().indexOf('MAC') >= 0,
+  isMac: navigator.userAgent.includes('MAC') || navigator.platform.toUpperCase().includes('MAC'),
   Vim: new Vim(),
   interactions: new DocsInteraction(),
   VimBuffer: new VimBuffer(),

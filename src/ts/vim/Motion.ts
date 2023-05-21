@@ -28,21 +28,32 @@ export class Motion {
   private _repeat = ''
   private _needsAfterKeys: needsAfterKeys = { status: false, requiredKeys: 0 }
 
+  /**
+   * Detects if a key should repeat.
+   */
   private _shouldRepeat(key: string) {
-    if (this._currentKeys.length === 0 && key.match(/[0-9]/)) {
+    if (this._currentKeys.length === 0 && /[0-9]/.exec(key)) {
       if (this._repeat === '' && key === '0') return true
       return true
     }
     return false
   }
 
+  /**
+   * Reset the state of the Motion class
+   */
   private _resetState() {
     this._currentKeys = []
     this._repeat = ''
   }
 
+  /**
+   * Checks if a function returns a break code
+   * Functions like `f` return a break code because they need characters after them
+   */
   private static _functionReturnsBreakCode(func: (...args: unknown[]) => void): func is () => VimBreakCodesReturnType {
     if (typeof func === 'undefined') return false
+    // Checks if the functions return type contains { code: string, required: number}
     function codeInFunc(testFunction: (...args: unknown[]) => void): testFunction is () => VimBreakCodesReturnType {
       if (
         'code' in testFunction &&
@@ -64,6 +75,7 @@ export class Motion {
     return false
   }
 
+  /** Feed a key to the Motion class */
   // eslint-disable-next-line complexity
   public feedkey(originalKey: keyof Keys, opts: KeyboardOpts = {}): boolean {
     if (this._shouldRepeat(originalKey)) {

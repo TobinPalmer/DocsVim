@@ -2,6 +2,7 @@ import docsInteraction from './docs/DocsInteraction'
 import { VIM } from './main'
 import CommandQueue from './vim/CommandQueue'
 
+// Tests style commands (bold, italic, etc.)
 function styleTest(Queue: CommandQueue) {
   Queue.add({ func: docsInteraction.toggleBold, params: [], delay: 5 })
   Queue.add({ func: docsInteraction.pasteText, params: { text: '\n\nStyle Test\n\n' } })
@@ -23,6 +24,7 @@ function styleTest(Queue: CommandQueue) {
   Queue.add({ func: docsInteraction.pasteText, params: { text: "This text shouldn't be underlined\n\n" } })
 }
 
+// Tests changing colors
 function colorTest(Queue: CommandQueue) {
   Queue.add({ func: docsInteraction.toggleBold, params: [], delay: 5 })
   Queue.add({ func: docsInteraction.pasteText, params: { text: '\n\nColor Test\n\n' } })
@@ -37,6 +39,7 @@ function colorTest(Queue: CommandQueue) {
   Queue.add({ func: docsInteraction.pasteText, params: { text: 'Back to black\n\n' } })
 }
 
+// Tests jumping to a character
 function jumpTest(Queue: CommandQueue) {
   Queue.add({ func: docsInteraction.toggleBold, params: [], delay: 5 })
   Queue.add({ func: docsInteraction.pasteText, params: { text: '\n\nJump Test' } })
@@ -62,6 +65,7 @@ function jumpTest(Queue: CommandQueue) {
   // Queue.add({ func: docsInteraction.jumpTo, params: { target: 'd', forward: false }, delay: 200 })
 }
 
+// Tests using the home and end keys of different keyboards / OS
 function homeEndTest(Queue: CommandQueue) {
   Queue.add({ func: docsInteraction.toggleBold, params: [], delay: 100 })
   Queue.add({ func: docsInteraction.pasteText, params: { text: '\n\nHome - End Test\n\n' } })
@@ -74,6 +78,7 @@ function homeEndTest(Queue: CommandQueue) {
   Queue.add({ func: docsInteraction.pasteText, params: { text: '|END|' } })
 }
 
+// Test Function
 export default function test(suite?: ('home' | 'jump' | 'color' | 'style')[]) {
   const Queue = VIM.CommandQueue
   if (!suite) return
