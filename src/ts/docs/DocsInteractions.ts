@@ -1,7 +1,7 @@
 import FormatKey, { Keys } from '../input/FormatKey'
 import { VIM } from '../main'
 import { type Color } from '../types/docTypes'
-import { type KeyboardOpts } from '../types/vimTypes'
+import { VimMode, VimRegisters, type KeyboardOpts } from '../types/vimTypes'
 
 /**
  * This class is used to interact with the google docs page
@@ -18,6 +18,7 @@ export default class DocsInteractions {
             altKey: event.altKey,
           }
           // Sends the keydown event to the vim class to handle it
+          console.log('Getting keyboard event')
           if (VIM.Vim.keydown(event.key, opts)) {
             event.preventDefault()
             event.stopPropagation()
@@ -41,11 +42,80 @@ export default class DocsInteractions {
   }
 
   /**
+   * Stops selecting text
+   */
+  public static stopSelecting() {
+    const oldMode = VIM.Vim.mode
+    VIM.Vim.mode = VimMode.INSERT
+    DocsInteractions.pressKey({ key: 'ArrowRight' })
+    DocsInteractions.pressKey({ key: 'ArrowLeft' })
+    VIM.Vim.mode = VimMode.NORMAL
+    // VIM.Vim.mode = oldMode
+  }
+
+  /**
+   * Pastes text into the google docs text target
+   * @param text the selector to press
+   */
+  public static pasteText({ text }: { text: string }): typeof DocsInteractions {
+    const element = (
+      (document.getElementsByClassName('docs-texteventtarget-iframe')[0] as HTMLIFrameElement)
+        .contentDocument as Document
+    ).querySelector('[contenteditable=true]') as HTMLElement
+
+    const data = new DataTransfer()
+    data.setData('text/plain', text)
+
+    const paste = new ClipboardEvent('paste', { clipboardData: data })
+    if (paste.clipboardData !== null) paste.clipboardData.setData('text/plain', text)
+
+    element.dispatchEvent(paste)
+
+    return this
+  }
+
+  /**
+   * Pastes the current text in a buffer
+   */
+  public static pasteFromRegister({ register: buffer }: { register: keyof typeof VimRegisters }) {
+    VIM.CommandQueue.add({
+      func: DocsInteractions._openEditMenu,
+      params: [],
+    })
+    VIM.CommandQueue.add({
+      func: DocsInteractions.pressHTMLElement,
+      params: {
+        selector: '[id=":77"]',
+        clickingMenuItem: false,
+        repeat: 2,
+      },
+    })
+  }
+
+  /**
+   * Copies the current line
+   */
+  public static copyCurrentLine({ fullLine }: { fullLine?: boolean } = {}) {
+    console.log('Copying current line')
+    VIM.CommandQueue.add({ func: DocsInteractions.pressKey, params: { key: 'Home' } })
+    VIM.CommandQueue.add({ func: DocsInteractions.pressKey, params: { key: 'End', opts: { shiftKey: true } } })
+    VIM.Register.copyText({ fullLine: fullLine ?? false })
+    setTimeout(() => {
+      DocsInteractions.stopSelecting()
+      // eslint-disable-next-line no-magic-numbers
+    }, 50)
+    VIM.Vim.mode = VimMode.NORMAL
+
+    return new Promise((resolve) => {
+      resolve(VIM.Register.register.get(VimRegisters.DEFAULT))
+    })
+  }
+
+  /**
    * @param width the width to set the cursor.
    * @param isInsertMode changes the color of the cursor depending on mode.
    */
   public static setCursorWidth({ width, isInsertMode }: { width: number; isInsertMode?: boolean }) {
-    console.log("Changing the cursor's style")
     const cursor = this.getUserCursor
 
     if (cursor === null) return false
@@ -244,6 +314,7 @@ export default class DocsInteractions {
       Enter: 13,
       Home: 36,
       End: 35,
+      Escape: 27,
     } as const
 
     const event = new KeyboardEvent('keydown', {
@@ -275,58 +346,72 @@ export default class DocsInteractions {
     repeat?: number
   }): void {
     console.log(`Jumping to ${target}`)
-    // Return exesively long repeats
-    if (repeat > VIM.VARIABLES.EXCESSIVE_REPEAT || target.length > 1) return
-    DocsInteractions.pressHTMLElement({
-      selector: '.goog-menuitem.apps-menuitem[id=":7d"]',
-      clickingMenuItem: false,
-      repeat: 2,
+
+    DocsInteractions.copyCurrentLine().then((line) => {
+      console.log('curr line', line)
     })
-    ;(document.querySelector('.docs-findinput-container input') as HTMLInputElement).value = target
-    if (
-      (document.querySelector('#docs-findandreplacedialog-match-case') as HTMLElement).getAttribute('aria-checked') ===
-      'false'
-    ) {
-      ;(document.querySelector('#docs-findandreplacedialog-match-case') as HTMLElement).click()
-    }
+    // console.log(VIM.Register.register.get(VimRegisters.LINE))
 
-    // ;(document.querySelector('.modal-dialog.docs-dialog.docs-findandreplacedialog') as HTMLElement).style.setProperty(
-    //   'opacity',
-    //   '0',
-    //   'important',
-    // )
-    // ;(document.querySelector('.modal-dialog.docs-dialog.docs-findandreplacedialog') as HTMLElement).style.display =
-    //   'none'
-    if (forward) {
-      for (let i = 1; i < repeat; ++i) {
-        DocsInteractions.pressHTMLElement({
-          selector: '#docs-findandreplacedialog-button-next',
-        })
-      }
-    } else {
-      for (let i = 1; i < repeat + 1; i++) {
-        DocsInteractions.pressHTMLElement({
-          selector: '#docs-findandreplacedialog-button-previous',
-        })
-      }
-    }
-    const ARROW_DELAY_TIME = 200
-    const PRESS_X_TIME = 250
-    const ARROW_DELAY = PRESS_X_TIME + ARROW_DELAY_TIME
-
-    setTimeout(() => {
-      console.log('pressing', document.querySelector('.modal-dialog-title-close') as HTMLElement)
-      ;(document.querySelector('.modal-dialog.docs-dialog.docs-findandreplacedialog') as HTMLElement).style.display =
-        'none'
-      DocsInteractions.pressHTMLElement({
-        selector: '.modal-dialog-title-close',
-      })
-    }, PRESS_X_TIME)
-    setTimeout(() => {
-      DocsInteractions.pressKey({ key: 'ArrowLeft' })
-      ;(document.querySelector('.modal-dialog.docs-dialog.docs-findandreplacedialog') as HTMLElement).style.opacity =
-        '1'
-    }, ARROW_DELAY)
+    // // Return exesively long repeats
+    // if (repeat > VIM.VARIABLES.EXCESSIVE_REPEAT || target.length > 1) return
+    // DocsInteractions.pressHTMLElement({
+    //   selector: '.goog-menuitem.apps-menuitem[id=":7d"]',
+    //   clickingMenuItem: false,
+    //   repeat: 2,
+    // })
+    // ;(document.querySelector('.docs-findinput-container input') as HTMLInputElement).value = target
+    // if (
+    //   (document.querySelector('#docs-findandreplacedialog-match-case') as HTMLElement).getAttribute('aria-checked') ===
+    //   'false'
+    // ) {
+    //   ;(document.querySelector('#docs-findandreplacedialog-match-case') as HTMLElement).click()
+    // }
+    //
+    // // ;(document.querySelector('.modal-dialog.docs-dialog.docs-findandreplacedialog') as HTMLElement).style.left =
+    // //   '-9999px'
+    // if (forward) {
+    //   for (let i = 1; i < repeat; ++i) {
+    //     console.log('Next')
+    //     DocsInteractions.pressHTMLElement({
+    //       selector: '#docs-findandreplacedialog-button-next',
+    //     })
+    //   }
+    // } else {
+    //   for (let i = 1; i < repeat + 1; i++) {
+    //     console.log('Previous')
+    //     DocsInteractions.pressHTMLElement({
+    //       selector: '#docs-findandreplacedialog-button-previous',
+    //     })
+    //   }
+    // }
+    // const ARROW_DELAY_TIME = 300
+    // const PRESS_X_TIME = 350
+    // const ARROW_DELAY = PRESS_X_TIME + ARROW_DELAY_TIME
+    //
+    // if (
+    //   (document.querySelector('#docs-findandreplacedialog-button-next') as HTMLElement).classList.contains(
+    //     'jfk-button-disabled',
+    //   )
+    // ) {
+    //   console.log('Invalid search')
+    //   ;(document.querySelector('#docs-findandreplacedialog-match-case') as HTMLElement).focus()
+    //   // DocsInteractions.pressHTMLElement({
+    //   //   selector: '.modal-dialog-title-close',
+    //   // })
+    // } else {
+    //   console.log('good search')
+    //   console.log((document.querySelector('#docs-findandreplacedialog-button-next') as HTMLElement).classList)
+    //   setTimeout(() => {
+    //     DocsInteractions.pressHTMLElement({
+    //       selector: '.modal-dialog-title-close',
+    //     })
+    //   }, PRESS_X_TIME)
+    //   setTimeout(() => {
+    //     DocsInteractions.pressKey({ key: 'ArrowLeft' })
+    //     ;(document.querySelector('.modal-dialog.docs-dialog.docs-findandreplacedialog') as HTMLElement).style.opacity =
+    //       '1'
+    //   }, ARROW_DELAY)
+    // }
   }
 
   /**
@@ -346,7 +431,7 @@ export default class DocsInteractions {
   /**
    * Opens the undo menu
    */
-  private static _openUndoMenu(): void {
+  private static _openEditMenu(): void {
     DocsInteractions.pressHTMLElement({ selector: '#docs-edit-menu' })
   }
 
@@ -367,15 +452,15 @@ export default class DocsInteractions {
    * Undoes the last action
    */
   public static undo(): void {
-    DocsInteractions._openUndoMenu()
-    DocsInteractions.pressHTMLElement({ selector: '[id=":72"]', repeat: 2 })
+    DocsInteractions._openEditMenu()
+    DocsInteractions.pressHTMLElement({ selector: '[id=":72"]', repeat: 1 })
   }
 
   /**
    * Copies the selected text to your system clipboard
    */
   public static copy(): void {
-    DocsInteractions._openUndoMenu()
+    DocsInteractions._openEditMenu()
     DocsInteractions.pressHTMLElement({ selector: '[id=":76"]', repeat: 2 })
   }
 
@@ -502,26 +587,5 @@ export default class DocsInteractions {
       element.dispatchEvent(events.click)
       element.dispatchEvent(events.mouseleave)
     }
-  }
-
-  /**
-   * Pastes text into the google docs text target
-   * @param text the selector to press
-   */
-  public static pasteText({ text }: { text: string }): typeof DocsInteractions {
-    const element = (
-      (document.getElementsByClassName('docs-texteventtarget-iframe')[0] as HTMLIFrameElement)
-        .contentDocument as Document
-    ).querySelector('[contenteditable=true]') as HTMLElement
-
-    const data = new DataTransfer()
-    data.setData('text/plain', text)
-
-    const paste = new ClipboardEvent('paste', { clipboardData: data })
-    if (paste.clipboardData !== null) paste.clipboardData.setData('text/plain', text)
-
-    element.dispatchEvent(paste)
-
-    return this
   }
 }

@@ -67,6 +67,7 @@ const keysList = {
   PageUp: 'PageUp',
   Enter: 'Enter',
   Escape: 'Escape',
+  Tab: 'Tab',
 } as const
 
 export type Keys = typeof keysList & nonNormalKeys

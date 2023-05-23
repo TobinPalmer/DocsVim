@@ -94,7 +94,6 @@ export default class Motion {
 
     // Loop through all the keys
     for (const currentKey of this._currentKeys) {
-      console.log(currentKey.key.toLowerCase())
       // If the currentObject[key] is a function, call it with the opts
       if (isFunction(currentObject[currentKey.key.toLowerCase()])) {
         const repeat = parseInt(this._repeat, 10) || 1

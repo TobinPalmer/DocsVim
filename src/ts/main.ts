@@ -27,6 +27,7 @@ VIM.Statusline.update()
 const START_DELAY = 0
 
 setTimeout(() => {
+  // test(['home', 'jump', 'color', 'style'])
   test()
 }, START_DELAY)
 

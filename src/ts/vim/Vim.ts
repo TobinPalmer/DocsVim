@@ -6,7 +6,7 @@ import { VimMode, type KeyboardOpts } from '../types/vimTypes'
  * Vim class that handles different vim modes and input
  */
 export default class Vim {
-  private _mode: VimMode = VimMode.insert
+  private _mode: VimMode = VimMode.INSERT
 
   /**
    * Gets the current mode
@@ -26,12 +26,12 @@ export default class Vim {
     }, 0)
 
     switch (mode) {
-      case VimMode.normal:
-      case VimMode.visual:
-      case VimMode.visualLine:
+      case VimMode.NORMAL:
+      case VimMode.VISUAL:
+      case VimMode.VISUAL_LINE:
         DocsInteractions.setCursorWidth({ width: DocsInteractions.getFontSize() / 2 })
         break
-      case VimMode.insert:
+      case VimMode.INSERT:
         // docsInteractions.setCursorWidth({ width: 1 * docsInteractions.getFontSize() })
         DocsInteractions.setCursorWidth({ width: 2, isInsertMode: true })
         break
@@ -59,7 +59,7 @@ export default class Vim {
     opts.mac ??= VIM.isMac
     const result = VIM.Motion.feedkey(Vim._keyToString(key), opts)
 
-    if (this._mode === VimMode.insert) return result
+    if (this._mode === VimMode.INSERT) return result
 
     return true
   }

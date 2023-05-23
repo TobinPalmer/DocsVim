@@ -2,12 +2,18 @@ import { Keys } from '../input/FormatKey'
 
 // eslint-disable-next-line no-shadow
 export enum VimMode {
-  'normal' = 'NORMAL',
-  'insert' = 'INSERT',
-  'visual' = 'VISUAL',
-  'visualLine' = 'VISUAL_LINE',
-  'command' = 'COMMAND',
-  'running' = 'RUNNING',
+  NORMAL = 'NORMAL',
+  INSERT = 'INSERT',
+  VISUAL = 'VISUAL',
+  VISUAL_LINE = 'VISUAL_LINE',
+  COMMAND = 'COMMAND',
+  RUNNING = 'RUNNING',
+}
+
+// eslint-disable-next-line no-shadow
+export enum VimRegisters {
+  LINE = 'LINE',
+  DEFAULT = 'DEFAULT',
 }
 
 // eslint-disable-next-line no-shadow
