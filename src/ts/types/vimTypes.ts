@@ -21,6 +21,8 @@ export enum VimBreakCodes {
   'find' = 'FIND',
 }
 
+export type ClipboardContent = string & { __brand: 'clipboardContent' }
+
 export type KeyboardOpts = Partial<{
   ctrlKey: boolean
   metaKey: boolean

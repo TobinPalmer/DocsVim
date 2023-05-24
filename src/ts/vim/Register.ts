@@ -1,6 +1,6 @@
 import DocsInteractions from '../docs/DocsInteractions'
 import { VIM } from '../main'
-import { VimRegisters } from '../types/vimTypes'
+import { type ClipboardContent, VimRegisters } from '../types/vimTypes'
 
 /**
  * Register class handles the vim clipboard which is seperate from the system clipboard
@@ -8,18 +8,24 @@ import { VimRegisters } from '../types/vimTypes'
 export default class Register {
   // eslint-disable-next-line no-use-before-define
   private static _instance: Register
-  private readonly registerContent: Map<VimRegisters, string>
+  private readonly registerContent: Map<keyof typeof VimRegisters, string>
+
+  public async formatClipboardContent(content: ClipboardContent) {
+    content = `${content}` as ClipboardContent
+    await navigator.clipboard.writeText(content)
+    this.registerContent.set(VimRegisters.DEFAULT, content)
+  }
 
   /**
    * Gets the users clipboard content
    */
-  public async getClipboardContent({ fullLine }: { fullLine?: boolean } = {}) {
+  public async getClipboardContent({ fullLine }: { fullLine?: boolean } = {}): Promise<ClipboardContent | null> {
     try {
-      const content = `${await navigator.clipboard.readText()}${fullLine ? '\n' : ''}`
+      const content = await navigator.clipboard.readText()
+      console.log(`%c CLIPBOARD CONTENT ${content}`, 'color: green')
       this.registerContent.set(VimRegisters.DEFAULT, content ?? '')
-      return content
+      return content as ClipboardContent
     } catch (error) {
-      console.error('Failed to read clipboard content:', error)
       return null
     }
   }
@@ -28,27 +34,16 @@ export default class Register {
    * Copies text that is seleted by the user
    */
   public async copyText({ fullLine }: { fullLine?: boolean } = {}) {
-    console.log('copying text with ', fullLine)
     VIM.CommandQueue.add({ func: DocsInteractions.pressHTMLElement, params: { selector: '#docs-edit-menu' } })
     VIM.CommandQueue.add({ func: DocsInteractions.pressHTMLElement, params: { selector: '[id=":76"]' } })
+
+    console.log('Just coppied this gg', await this.getClipboardContent({ fullLine }))
 
     this.registerContent.set(VimRegisters.DEFAULT, (await this.getClipboardContent({ fullLine })) ?? '')
   }
 
-  // public async getCurrentLine() {
-  //   VIM.CommandQueue.add({
-  //     func: DocsInteractions.pressKey,
-  //     params: { key: 'ArrowLeft', opts: { ctrlKey: true } },
-  //   })
-  //   VIM.CommandQueue.add({
-  //     func: DocsInteractions.pressKey,
-  //     params: { key: 'ArrowLeft', opts: { ctrlKey: true, shiftKey: true } },
-  //   })
-  //   this.registerContent.set(VimRegisters.LINE, (await this.getClipboardContent()) ?? '')
-  // }
-
   private constructor() {
-    this.registerContent = new Map<VimRegisters, string>()
+    this.registerContent = new Map<keyof typeof VimRegisters, string>()
     this.getClipboardContent()
       .then((content) => {
         if (content !== null) this.registerContent.set(VimRegisters.DEFAULT, content)

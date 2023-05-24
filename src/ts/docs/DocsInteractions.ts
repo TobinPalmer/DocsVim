@@ -45,10 +45,9 @@ export default class DocsInteractions {
    * Stops selecting text
    */
   public static stopSelecting() {
-    const oldMode = VIM.Vim.mode
     VIM.Vim.mode = VimMode.INSERT
-    DocsInteractions.pressKey({ key: 'ArrowRight' })
-    DocsInteractions.pressKey({ key: 'ArrowLeft' })
+    VIM.CommandQueue.add({ func: DocsInteractions.pressKey, params: { key: 'ArrowRight' } })
+    VIM.CommandQueue.add({ func: DocsInteractions.pressKey, params: { key: 'ArrowLeft' } })
     VIM.Vim.mode = VimMode.NORMAL
     // VIM.Vim.mode = oldMode
   }
@@ -77,18 +76,23 @@ export default class DocsInteractions {
   /**
    * Pastes the current text in a buffer
    */
-  public static pasteFromRegister({ register: buffer }: { register: keyof typeof VimRegisters }) {
-    VIM.CommandQueue.add({
-      func: DocsInteractions._openEditMenu,
-      params: [],
-    })
-    VIM.CommandQueue.add({
-      func: DocsInteractions.pressHTMLElement,
-      params: {
-        selector: '[id=":77"]',
-        clickingMenuItem: false,
-        repeat: 2,
-      },
+  public static async pasteFromRegister({ register: buffer }: { register: keyof typeof VimRegisters }) {
+    const text = await VIM.Register.getClipboardContent()
+    console.log('this is text', text)
+    if (text === null) return
+    VIM.Register.formatClipboardContent(text).then(() => {
+      VIM.CommandQueue.add({
+        func: DocsInteractions._openEditMenu,
+        params: [],
+      })
+      VIM.CommandQueue.add({
+        func: DocsInteractions.pressHTMLElement,
+        params: {
+          selector: '[id=":77"]',
+          clickingMenuItem: false,
+          repeat: 2,
+        },
+      })
     })
   }
 
@@ -99,11 +103,16 @@ export default class DocsInteractions {
     console.log('Copying current line')
     VIM.CommandQueue.add({ func: DocsInteractions.pressKey, params: { key: 'Home' } })
     VIM.CommandQueue.add({ func: DocsInteractions.pressKey, params: { key: 'End', opts: { shiftKey: true } } })
-    VIM.Register.copyText({ fullLine: fullLine ?? false })
-    setTimeout(() => {
+
+    VIM.Register.copyText({ fullLine: fullLine ?? false }).then(() => {
+      console.log('cool')
       DocsInteractions.stopSelecting()
-      // eslint-disable-next-line no-magic-numbers
-    }, 50)
+    })
+
+    // setTimeout(() => {
+    //   // eslint-disable-next-line no-magic-numbers
+    // DocsInteractions.stopSelecting()
+    // }, 50)
     VIM.Vim.mode = VimMode.NORMAL
 
     return new Promise((resolve) => {
