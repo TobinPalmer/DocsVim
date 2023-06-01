@@ -183,7 +183,7 @@ export const COMMAND_MAP = Object.freeze({
         params: { key: 'ArrowRight', opts: { altKey: true }, repeat: opts.repeat },
       })
     },
-    p(opts: KeyboardCommand = {}) {
+    p() {
       return VIM.CommandQueue.add({
         func: DocsInteractions.pasteFromRegister,
         params: { register: VimRegisters.DEFAULT },
@@ -297,31 +297,30 @@ export const COMMAND_MAP = Object.freeze({
       d(opts: KeyboardCommand = {}) {
         if (opts.mac) {
           VIM.CommandQueue.add({
-            func: DocsInteractions.pasteText,
-            params: { text: 'x' },
-            delay: 0,
-          })
-          VIM.CommandQueue.add({
             func: DocsInteractions.pressKey,
-            params: { key: 'ArrowRight', opts: { ctrlKey: true } },
+            params: { key: 'Home' },
             delay: 0,
           })
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'Backspace', opts: { ctrlKey: true } },
-            delay: 0,
-          })
-          VIM.CommandQueue.add({ func: DocsInteractions.pressKey, params: { key: 'ArrowDown' }, delay: 0 })
-          VIM.CommandQueue.add({ func: DocsInteractions.pressKey, params: { key: 'Backspace' } })
-        } else {
-          VIM.CommandQueue.add({ func: DocsInteractions.pressKey, params: { key: 'Home' }, delay: 0 })
           VIM.CommandQueue.add({
             func: DocsInteractions.pressKey,
             params: { key: 'End', opts: { shiftKey: true } },
             delay: 0,
           })
-          VIM.CommandQueue.add({ func: DocsInteractions.pressKey, params: { key: 'Delete' } })
+          DocsInteractions.copyCurrentLine({ fullLine: true }).then(() => {
+            VIM.CommandQueue.add({
+              func: DocsInteractions.pressKey,
+              params: { key: 'Backspace', opts: { shiftKey: true } },
+              delay: 0,
+            })
+          })
         }
+        VIM.CommandQueue.add({ func: DocsInteractions.pressKey, params: { key: 'Home' }, delay: 0 })
+        VIM.CommandQueue.add({
+          func: DocsInteractions.pressKey,
+          params: { key: 'End', opts: { shiftKey: true } },
+          delay: 0,
+        })
+        VIM.CommandQueue.add({ func: DocsInteractions.pressKey, params: { key: 'Delete' } })
       },
       i: {
         w() {
@@ -388,9 +387,8 @@ export const COMMAND_MAP = Object.freeze({
     },
     y: {
       y() {
-        return VIM.CommandQueue.add({
-          func: DocsInteractions.copyCurrentLine,
-          params: { fullLine: true },
+        DocsInteractions.copyCurrentLine({ fullLine: true }).then(() => {
+          console.log('OG', VIM.Register.register.get(VimRegisters.DEFAULT))
         })
       },
     },

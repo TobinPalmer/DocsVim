@@ -18,7 +18,6 @@ export default class DocsInteractions {
             altKey: event.altKey,
           }
           // Sends the keydown event to the vim class to handle it
-          console.log('Getting keyboard event')
           if (VIM.Vim.keydown(event.key, opts)) {
             event.preventDefault()
             event.stopPropagation()
@@ -46,8 +45,14 @@ export default class DocsInteractions {
    */
   public static stopSelecting() {
     VIM.Vim.mode = VimMode.INSERT
-    VIM.CommandQueue.add({ func: DocsInteractions.pressKey, params: { key: 'ArrowRight' } })
-    VIM.CommandQueue.add({ func: DocsInteractions.pressKey, params: { key: 'ArrowLeft' } })
+    VIM.CommandQueue.add({
+      func: DocsInteractions.pressKey,
+      params: { key: 'ArrowRight' },
+    })
+    VIM.CommandQueue.add({
+      func: DocsInteractions.pressKey,
+      params: { key: 'ArrowLeft' },
+    })
     VIM.Vim.mode = VimMode.NORMAL
     // VIM.Vim.mode = oldMode
   }
@@ -78,7 +83,6 @@ export default class DocsInteractions {
    */
   public static async pasteFromRegister({ register: buffer }: { register: keyof typeof VimRegisters }) {
     const text = await VIM.Register.getClipboardContent()
-    console.log('this is text', text)
     if (text === null) return
     VIM.Register.formatClipboardContent(text).then(() => {
       VIM.CommandQueue.add({
@@ -100,19 +104,19 @@ export default class DocsInteractions {
    * Copies the current line
    */
   public static copyCurrentLine({ fullLine }: { fullLine?: boolean } = {}) {
-    console.log('Copying current line')
-    VIM.CommandQueue.add({ func: DocsInteractions.pressKey, params: { key: 'Home' } })
-    VIM.CommandQueue.add({ func: DocsInteractions.pressKey, params: { key: 'End', opts: { shiftKey: true } } })
+    VIM.CommandQueue.add({
+      func: DocsInteractions.pressKey,
+      params: { key: 'Home' },
+    })
+    VIM.CommandQueue.add({
+      func: DocsInteractions.pressKey,
+      params: { key: 'End', opts: { shiftKey: true } },
+    })
 
     VIM.Register.copyText({ fullLine: fullLine ?? false }).then(() => {
-      console.log('cool')
       DocsInteractions.stopSelecting()
     })
 
-    // setTimeout(() => {
-    //   // eslint-disable-next-line no-magic-numbers
-    // DocsInteractions.stopSelecting()
-    // }, 50)
     VIM.Vim.mode = VimMode.NORMAL
 
     return new Promise((resolve) => {
@@ -132,7 +136,7 @@ export default class DocsInteractions {
 
     caret.style.borderWidth = `${width}px`
     const HALF_OPACITY = 0.5
-    const cursorColor = `rgba(0, 0, 0, ${isInsertMode ? 1 : HALF_OPACITY})`
+    const cursorColor = `rgba(${isInsertMode ? 1 : HALF_OPACITY}, 0, 0, ${isInsertMode ? 1 : HALF_OPACITY})`
     // const cursorColor = `rgba(0, 0, 0, 0.5)`
     caret.style.setProperty('border-color', cursorColor, 'important')
     caret.style.mixBlendMode = 'difference'
@@ -141,7 +145,6 @@ export default class DocsInteractions {
 
   /**
    * Gets the users cursors elemenet
-   * @returns {Element | null}
    */
   static get getUserCursor(): Element | null {
     let cursor: Element | null = null
@@ -173,7 +176,10 @@ export default class DocsInteractions {
       })
       VIM.CommandQueue.add({
         func: DocsInteractions.pressKey,
-        params: { key: 'ArrowDown', opts: { ctrlKey: true, mac: true, shiftKey: true } },
+        params: {
+          key: 'ArrowDown',
+          opts: { ctrlKey: true, mac: true, shiftKey: true },
+        },
         delay: 0,
       })
       VIM.CommandQueue.add({
@@ -354,12 +360,9 @@ export default class DocsInteractions {
     forward?: boolean
     repeat?: number
   }): void {
-    console.log(`Jumping to ${target}`)
-
     DocsInteractions.copyCurrentLine().then((line) => {
-      console.log('curr line', line)
+      console.log('This is the line in the jumpto method', line)
     })
-    // console.log(VIM.Register.register.get(VimRegisters.LINE))
 
     // // Return exesively long repeats
     // if (repeat > VIM.VARIABLES.EXCESSIVE_REPEAT || target.length > 1) return
@@ -380,14 +383,12 @@ export default class DocsInteractions {
     // //   '-9999px'
     // if (forward) {
     //   for (let i = 1; i < repeat; ++i) {
-    //     console.log('Next')
     //     DocsInteractions.pressHTMLElement({
     //       selector: '#docs-findandreplacedialog-button-next',
     //     })
     //   }
     // } else {
     //   for (let i = 1; i < repeat + 1; i++) {
-    //     console.log('Previous')
     //     DocsInteractions.pressHTMLElement({
     //       selector: '#docs-findandreplacedialog-button-previous',
     //     })
@@ -402,14 +403,11 @@ export default class DocsInteractions {
     //     'jfk-button-disabled',
     //   )
     // ) {
-    //   console.log('Invalid search')
     //   ;(document.querySelector('#docs-findandreplacedialog-match-case') as HTMLElement).focus()
     //   // DocsInteractions.pressHTMLElement({
     //   //   selector: '.modal-dialog-title-close',
     //   // })
     // } else {
-    //   console.log('good search')
-    //   console.log((document.querySelector('#docs-findandreplacedialog-button-next') as HTMLElement).classList)
     //   setTimeout(() => {
     //     DocsInteractions.pressHTMLElement({
     //       selector: '.modal-dialog-title-close',
