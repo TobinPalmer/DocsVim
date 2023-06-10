@@ -78,6 +78,17 @@ export default class DocsInteractions {
     return this
   }
 
+  public static async getTextFromRegister({ register: buffer }: { register: keyof typeof VimRegisters }) {
+    const text = await VIM.Register.getClipboardContent()
+    if (text === null) return
+    VIM.Register.formatClipboardContent(text).then(() => {
+      VIM.Register.register.set(buffer, text)
+      return new Promise((resolve) => {
+        resolve(text)
+      })
+    })
+  }
+
   /**
    * Pastes the current text in a buffer
    */
@@ -360,9 +371,40 @@ export default class DocsInteractions {
     forward?: boolean
     repeat?: number
   }): void {
-    DocsInteractions.copyCurrentLine().then((line) => {
-      console.log('This is the line in the jumpto method', line)
-    })
+    VIM.CommandQueue.add({ func: DocsInteractions.copyCurrentLine, params: { fullLine: true } })
+    VIM.CommandQueue.add({ func: DocsInteractions.getTextFromRegister, params: { register: VimRegisters.DEFAULT } })
+
+    function analyseText(text: string) {
+      const arr = text.split('')
+      let index = -1
+      let count = 1
+      for (let i = 0; i < arr.length; i++) {
+        if (arr[i] === target) {
+          if (count === repeat) {
+            index = i
+          }
+          count++
+        }
+      }
+
+      return { index: index + 1, length: arr.length }
+    }
+
+    const CLIPBOARD_COPY_DELAY = 100
+    setTimeout(() => {
+      const regContent = VIM.Register.register.get(VimRegisters.DEFAULT) ?? ''
+      const analyse = analyseText(regContent)
+      if (analyse.index === null) return
+      const queue = VIM.CommandQueue
+      queue.add({
+        func: DocsInteractions.pressKey,
+        params: { key: 'Home' },
+      })
+      queue.add({
+        func: DocsInteractions.pressKey,
+        params: { key: 'ArrowRight', repeat: analyse.index },
+      })
+    }, CLIPBOARD_COPY_DELAY)
 
     // // Return exesively long repeats
     // if (repeat > VIM.VARIABLES.EXCESSIVE_REPEAT || target.length > 1) return

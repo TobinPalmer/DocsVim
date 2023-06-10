@@ -29,7 +29,9 @@ export default class Vim {
       case VimMode.NORMAL:
       case VimMode.VISUAL:
       case VimMode.VISUAL_LINE:
-        DocsInteractions.setCursorWidth({ width: DocsInteractions.getFontSize() / 2 })
+        DocsInteractions.setCursorWidth({
+          width: DocsInteractions.getFontSize() / 2,
+        })
         break
       case VimMode.INSERT:
         // docsInteractions.setCursorWidth({ width: 1 * docsInteractions.getFontSize() })

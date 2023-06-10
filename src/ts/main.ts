@@ -28,7 +28,7 @@ const START_DELAY = 0
 
 setTimeout(() => {
   // test(['home', 'jump', 'color', 'style'])
-  test()
+  // test(['copy'])
 }, START_DELAY)
 
 // VIM.motion.feedkey('normal')

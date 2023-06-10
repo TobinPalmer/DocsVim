@@ -11,7 +11,6 @@ export default class Register {
   private readonly registerContent: Map<keyof typeof VimRegisters, string>
 
   public async formatClipboardContent(content: ClipboardContent) {
-    console.log('formatting ', content)
     content = `${content}` as ClipboardContent
     await navigator.clipboard.writeText(content)
     this.registerContent.set(VimRegisters.DEFAULT, content)
@@ -24,6 +23,7 @@ export default class Register {
     try {
       const content = await navigator.clipboard.readText()
       console.log(`%c CLIPBOARD CONTENT ${content}`, 'color: red')
+
       this.registerContent.set(VimRegisters.DEFAULT, content ?? '')
       return content as ClipboardContent
     } catch (error) {
@@ -35,8 +35,14 @@ export default class Register {
    * Copies text that is seleted by the user
    */
   public async copyText({ fullLine }: { fullLine?: boolean } = {}) {
-    VIM.CommandQueue.add({ func: DocsInteractions.pressHTMLElement, params: { selector: '#docs-edit-menu' } })
-    VIM.CommandQueue.add({ func: DocsInteractions.pressHTMLElement, params: { selector: '[id=":76"]' } })
+    VIM.CommandQueue.add({
+      func: DocsInteractions.pressHTMLElement,
+      params: { selector: '#docs-edit-menu' },
+    })
+    VIM.CommandQueue.add({
+      func: DocsInteractions.pressHTMLElement,
+      params: { selector: '[id=":76"]' },
+    })
 
     this.registerContent.set(VimRegisters.DEFAULT, (await this.getClipboardContent({ fullLine })) ?? '')
   }
