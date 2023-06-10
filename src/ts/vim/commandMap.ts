@@ -77,6 +77,8 @@ export const COMMAND_MAP = Object.freeze({
   NORMAL: {
     f(opts: KeyboardCommand = {}) {
       if (opts.afterKeys) {
+        // if (opts.afterKeys[0].key === 'Shift') return { code: VimBreakCodes.find, required: 1 }
+        console.log(opts.afterKeys[0])
         if (opts.shiftKey) {
           VIM.CommandQueue.add({
             func: DocsInteractions.pressKey,

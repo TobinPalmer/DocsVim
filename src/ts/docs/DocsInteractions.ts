@@ -17,6 +17,7 @@ export default class DocsInteractions {
             shiftKey: event.shiftKey,
             altKey: event.altKey,
           }
+          if (event.key === 'Shift') return
           // Sends the keydown event to the vim class to handle it
           if (VIM.Vim.keydown(event.key, opts)) {
             event.preventDefault()
@@ -108,6 +109,52 @@ export default class DocsInteractions {
           repeat: 2,
         },
       })
+    })
+  }
+
+  /**
+   * Copies the text from the cursor to the start of the line
+   */
+  public static copyToStart({ fullLine }: { fullLine?: boolean } = {}) {
+    VIM.CommandQueue.add({
+      func: DocsInteractions.pressKey,
+      params: { key: 'Home', opts: { shiftKey: true } },
+    })
+
+    VIM.Register.copyText({ fullLine: fullLine ?? false }).then(() => {
+      VIM.CommandQueue.add({
+        func: DocsInteractions.pressKey,
+        params: { key: 'ArrowRight' },
+      })
+    })
+
+    VIM.Vim.mode = VimMode.NORMAL
+
+    return new Promise((resolve) => {
+      resolve(VIM.Register.register.get(VimRegisters.DEFAULT))
+    })
+  }
+
+  /**
+   * Copies the text from the cursor to the end of the line
+   */
+  public static copyToEnd({ fullLine }: { fullLine?: boolean } = {}) {
+    VIM.CommandQueue.add({
+      func: DocsInteractions.pressKey,
+      params: { key: 'End', opts: { shiftKey: true } },
+    })
+
+    VIM.Register.copyText({ fullLine: fullLine ?? false }).then(() => {
+      VIM.CommandQueue.add({
+        func: DocsInteractions.pressKey,
+        params: { key: 'ArrowLeft', repeat: 2 },
+      })
+    })
+
+    VIM.Vim.mode = VimMode.NORMAL
+
+    return new Promise((resolve) => {
+      resolve(VIM.Register.register.get(VimRegisters.DEFAULT))
     })
   }
 
@@ -371,13 +418,18 @@ export default class DocsInteractions {
     forward?: boolean
     repeat?: number
   }): void {
-    VIM.CommandQueue.add({ func: DocsInteractions.copyCurrentLine, params: { fullLine: true } })
+    if (forward) VIM.CommandQueue.add({ func: DocsInteractions.copyToEnd, params: { fullLine: true } })
+    else VIM.CommandQueue.add({ func: DocsInteractions.copyToStart, params: { fullLine: true } })
+
     VIM.CommandQueue.add({ func: DocsInteractions.getTextFromRegister, params: { register: VimRegisters.DEFAULT } })
 
     function analyseText(text: string) {
+      console.log('analysing', text)
+      const ERROR_INDEX = -1
       const arr = text.split('')
-      let index = -1
+      let index = ERROR_INDEX
       let count = 1
+      if (!forward) arr.reverse()
       for (let i = 0; i < arr.length; i++) {
         if (arr[i] === target) {
           if (count === repeat) {
@@ -387,6 +439,7 @@ export default class DocsInteractions {
         }
       }
 
+      if (index === ERROR_INDEX) return { index: null, length: null }
       return { index: index + 1, length: arr.length }
     }
 
@@ -396,14 +449,18 @@ export default class DocsInteractions {
       const analyse = analyseText(regContent)
       if (analyse.index === null) return
       const queue = VIM.CommandQueue
-      queue.add({
-        func: DocsInteractions.pressKey,
-        params: { key: 'Home' },
-      })
-      queue.add({
-        func: DocsInteractions.pressKey,
-        params: { key: 'ArrowRight', repeat: analyse.index },
-      })
+      if (forward) {
+        queue.add({
+          func: DocsInteractions.pressKey,
+          params: { key: 'ArrowRight', repeat: analyse.index },
+        })
+      } else {
+        queue.add({
+          func: DocsInteractions.pressKey,
+          params: { key: 'ArrowLeft', repeat: analyse.index },
+        })
+      }
+      console.log('INDEX TO LETTER', analyseText(regContent).index)
     }, CLIPBOARD_COPY_DELAY)
 
     // // Return exesively long repeats

@@ -75,7 +75,10 @@ export default class Motion {
       return false
     }
 
-    if (codeInFunc(func) && Object.values(VimBreakCodes).includes(func.code)) return true
+    if (codeInFunc(func) && Object.values(VimBreakCodes).includes(func.code)) {
+      console.log('calling')
+      return true
+    }
 
     return false
   }

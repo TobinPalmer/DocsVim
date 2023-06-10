@@ -1,4 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { warn } from 'console'
+import { VIM } from '../main'
+
 /**
  * The interface for the parameters of a command
  * T will be the function, and it will infer the Parameters<T> type to get the parameters
@@ -18,7 +22,7 @@ type CommandFunction = (...args: any[]) => any
  */
 interface Command {
   func: CommandFunction
-  params: any[]
+  params: any[] & { repeat?: number }
   delay: number
 }
 
@@ -69,6 +73,13 @@ export default class CommandQueue {
     if (typeof nextCommand === 'undefined') return
 
     // Run the command
+    // Check if the comands params includes repeat and that the value is not bigger than VIM.VARIABLES.EXCESSIVE_REPEAT, if it is, set it to 0
+    if (
+      typeof nextCommand.params.repeat !== 'undefined' &&
+      nextCommand.params.repeat > VIM.VARIABLES.EXCESSIVE_REPEAT
+    ) {
+      nextCommand.params.repeat = 1
+    }
     nextCommand.func(nextCommand.params)
 
     // Set a new delay timer that will run the next command when finished
