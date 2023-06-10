@@ -91,7 +91,6 @@ export const COMMAND_MAP = Object.freeze({
       VIM.CommandQueue.add({
         func: DocsInteractions.pressKey,
         params: { key: 'Enter' },
-        delay: 0,
       })
     },
     f(opts: KeyboardCommand = {}) {

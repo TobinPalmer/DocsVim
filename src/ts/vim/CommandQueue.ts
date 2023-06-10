@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { warn } from 'console'
 import { VIM } from '../main'
 
 /**

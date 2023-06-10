@@ -23,6 +23,7 @@ export default class Statusline {
   public update(): void {
     this.elem.innerHTML = `
     -- ${VIM.Vim.mode} --
+    <div class="right">${VIM.Motion.statusString}</div>
     `
   }
 
@@ -32,6 +33,8 @@ export default class Statusline {
         bottom: 0;
         width: 100%;
         height: 30px;
+        display: flex;
+        align-items: center;
         z-index: 2147483647;
         background-color: #fafbfe;
         border-top: 1px solid #c7c7c9;
@@ -39,6 +42,10 @@ export default class Statusline {
         font-size: 1rem;
         align-items: center;
         padding: 0 20px;
+    }
+    .statusline .right {
+        margin-left: auto;
+        margin-right: 2rem;
     }
     `
 }

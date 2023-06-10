@@ -28,6 +28,7 @@ export default class Motion {
   private _repeat = ''
   private _needsAfterKeys: needsAfterKeys = { status: false, requiredKeys: 0 }
   private _originalOpts: KeyboardOpts = {}
+  private _statusString: string[] = []
 
   /**
    * Detects if a key should repeat.
@@ -48,6 +49,7 @@ export default class Motion {
     this._afterKeys = []
     this._needsAfterKeys = { status: false, requiredKeys: 0 }
     this._repeat = ''
+    this._statusString = []
   }
 
   private readonly map: { [k: string]: any } = {}
@@ -83,15 +85,24 @@ export default class Motion {
     return false
   }
 
+  public get statusString() {
+    console.log('getting the status string', this._statusString)
+    return this._statusString.join('')
+  }
+
   /** Feed a key to the Motion class */
   // eslint-disable-next-line complexity
   public feedkey(originalKey: keyof Keys, opts: KeyboardOpts = {}): boolean {
     if (this._shouldRepeat(originalKey)) {
       this._repeat += originalKey
+      this._statusString.push(originalKey)
+      VIM.Statusline.update()
       return false
     }
 
     this._currentKeys.push({ key: originalKey, opts })
+    this._statusString.push(originalKey)
+    VIM.Statusline.update()
 
     let currentObject: CommandMap = COMMAND_MAP[VIM.Vim.mode]
 
@@ -143,93 +154,4 @@ export default class Motion {
 
     return true
   }
-
-  // eslint-disable-next-line complexity
-  // public feedkey(originalKey: keyof Keys, opts: KeyboardOpts = {}): boolean {
-  //   if (this.shouldRepeat(originalKey)) {
-  //     this.repeat += originalKey
-  //     return false
-  //   }
-  //
-  //   this.currentKeys.push({ key: originalKey, opts })
-  //
-  //   let currentObject: CommandMap = COMMAND_MAP[VIM.Vim.mode]
-  //
-  //   for (const currentKey of this.currentKeys) {
-  //     const { key } = currentKey
-  //     /**
-  //      * If the key is a function, call it with the opts
-  //      */
-  //     if (isFunction(currentObject[key.toLowerCase()])) {
-  //       const repeat = parseInt(this.repeat, 10) || 1
-  //       // Return type of CommandMap[key]()
-  //       /**
-  //        * We are checking if it is equal to a valueof VimBreakCodes
-  //        * If it is, then we need to see what the required keys that that method takes
-  //        */
-  //       interface VimBreakCodesReturnType {
-  //         code: VimBreakCodes
-  //         required: number
-  //       }
-  //
-  //       const val = (
-  //         currentObject[key.toLowerCase()] as unknown as (
-  //           options: KeyboardOpts & { repeat?: number },
-  //         ) => VimBreakCodesReturnType
-  //       )({ ...opts, repeat })
-  //       if (Object.values(VimBreakCodes).includes(val?.code)) {
-  //         /**
-  //          * The reson for required + 1, is because the first character is the orignal key, ex fg will be ['f', 'g']
-  //          * Ex: Jumping to the letter g will be `fg`, The required key is 1, being g
-  //          */
-  //         if (this.afterKeys.length <= val.required) {
-  //           // If the value is less than the required amount, push to the key array
-  //           if (this.firstTimeCalled) {
-  //             this.firstTimeCalled = false
-  //           } else {
-  //             this.afterKeys.push({ opts, key: originalKey })
-  //             // eslint-disable-next-line max-depth
-  //             if (this.afterKeys.length === val.required) {
-  //               //   'running code with',
-  //               //   currentObject[key.toLowerCase()] as unknown as (
-  //               //     options: KeyboardOpts & { repeat?: number },
-  //               //   ) => VimBreakCodesReturnType,
-  //               //   {
-  //               //     ...(({ afterKeys, ...spreadOpts }): KeyboardOpts => spreadOpts)(opts || {}),
-  //               //     repeat,
-  //               //     afterKeys: this.afterKeys,
-  //               //   },
-  //               // )
-  //               ;(
-  //                 currentObject[key.toLowerCase()] as unknown as (
-  //                   options: KeyboardOpts & { repeat?: number },
-  //                 ) => VimBreakCodesReturnType
-  //               )({
-  //                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  //                 ...(({ afterKeys, ...spreadOpts }) => spreadOpts)(opts || {}),
-  //                 repeat,
-  //                 afterKeys: this.afterKeys,
-  //               })
-  //               this.firstTimeCalled = true
-  //               this.afterKeys = []
-  //             }
-  //           }
-  //         }
-  //       } else {
-  //         this.currentKeys = []
-  //         this.repeat = ''
-  //         currentObject = COMMAND_MAP
-  //         return false
-  //       }
-  //     }
-  //     if (typeof currentObject[key.toLowerCase()] === 'undefined') {
-  //       this.currentKeys = []
-  //       currentObject = COMMAND_MAP
-  //       return false
-  //     }
-  //     currentObject = currentObject[key] as CommandMap
-  //   }
-  //
-  //   return true
-  // }
 }
