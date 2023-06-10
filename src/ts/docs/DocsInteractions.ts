@@ -462,62 +462,6 @@ export default class DocsInteractions {
       }
       console.log('INDEX TO LETTER', analyseText(regContent).index)
     }, CLIPBOARD_COPY_DELAY)
-
-    // // Return exesively long repeats
-    // if (repeat > VIM.VARIABLES.EXCESSIVE_REPEAT || target.length > 1) return
-    // DocsInteractions.pressHTMLElement({
-    //   selector: '.goog-menuitem.apps-menuitem[id=":7d"]',
-    //   clickingMenuItem: false,
-    //   repeat: 2,
-    // })
-    // ;(document.querySelector('.docs-findinput-container input') as HTMLInputElement).value = target
-    // if (
-    //   (document.querySelector('#docs-findandreplacedialog-match-case') as HTMLElement).getAttribute('aria-checked') ===
-    //   'false'
-    // ) {
-    //   ;(document.querySelector('#docs-findandreplacedialog-match-case') as HTMLElement).click()
-    // }
-    //
-    // // ;(document.querySelector('.modal-dialog.docs-dialog.docs-findandreplacedialog') as HTMLElement).style.left =
-    // //   '-9999px'
-    // if (forward) {
-    //   for (let i = 1; i < repeat; ++i) {
-    //     DocsInteractions.pressHTMLElement({
-    //       selector: '#docs-findandreplacedialog-button-next',
-    //     })
-    //   }
-    // } else {
-    //   for (let i = 1; i < repeat + 1; i++) {
-    //     DocsInteractions.pressHTMLElement({
-    //       selector: '#docs-findandreplacedialog-button-previous',
-    //     })
-    //   }
-    // }
-    // const ARROW_DELAY_TIME = 300
-    // const PRESS_X_TIME = 350
-    // const ARROW_DELAY = PRESS_X_TIME + ARROW_DELAY_TIME
-    //
-    // if (
-    //   (document.querySelector('#docs-findandreplacedialog-button-next') as HTMLElement).classList.contains(
-    //     'jfk-button-disabled',
-    //   )
-    // ) {
-    //   ;(document.querySelector('#docs-findandreplacedialog-match-case') as HTMLElement).focus()
-    //   // DocsInteractions.pressHTMLElement({
-    //   //   selector: '.modal-dialog-title-close',
-    //   // })
-    // } else {
-    //   setTimeout(() => {
-    //     DocsInteractions.pressHTMLElement({
-    //       selector: '.modal-dialog-title-close',
-    //     })
-    //   }, PRESS_X_TIME)
-    //   setTimeout(() => {
-    //     DocsInteractions.pressKey({ key: 'ArrowLeft' })
-    //     ;(document.querySelector('.modal-dialog.docs-dialog.docs-findandreplacedialog') as HTMLElement).style.opacity =
-    //       '1'
-    //   }, ARROW_DELAY)
-    // }
   }
 
   /**
