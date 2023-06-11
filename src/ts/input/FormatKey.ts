@@ -69,6 +69,7 @@ const keysList = {
   Escape: 'Escape',
   Tab: 'Tab',
   Shift: 'Shift',
+  ':': ':',
 } as const
 
 export type Keys = typeof keysList & nonNormalKeys

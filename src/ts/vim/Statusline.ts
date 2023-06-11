@@ -1,4 +1,5 @@
 import { VIM } from '../main'
+import Command from './Command'
 
 export default class Statusline {
   // eslint-disable-next-line no-use-before-define
@@ -23,6 +24,8 @@ export default class Statusline {
   public update(): void {
     this.elem.innerHTML = `
     -- ${VIM.Vim.mode} --
+    <div class="center error">${Command.status}</div>
+    <div class="center">${VIM.Motion.commandKeys}</div>
     <div class="right">${VIM.Motion.statusString}</div>
     `
   }
@@ -46,6 +49,13 @@ export default class Statusline {
     .statusline .right {
         margin-left: auto;
         margin-right: 2rem;
+    }
+    .statusline .error {
+      background-color: #ff0000;
+      color: white;
+    }
+    .statusline .center {
+        margin-left: 1.5rem
     }
     `
 }

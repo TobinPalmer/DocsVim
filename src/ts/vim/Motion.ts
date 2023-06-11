@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Keys } from '../input/FormatKey'
 import { VIM } from '../main'
-import { VimBreakCodes, type KeyboardOpts } from '../types/vimTypes'
+import { VimBreakCodes, VimMode, type KeyboardOpts } from '../types/vimTypes'
+import Command from './Command'
 import { COMMAND_MAP } from './commandMap'
 
 interface CommandMap {
@@ -29,6 +30,7 @@ export default class Motion {
   private _needsAfterKeys: needsAfterKeys = { status: false, requiredKeys: 0 }
   private _originalOpts: KeyboardOpts = {}
   private _statusString: string[] = []
+  private _commandKeys: string[] = []
 
   /**
    * Detects if a key should repeat.
@@ -50,6 +52,7 @@ export default class Motion {
     this._needsAfterKeys = { status: false, requiredKeys: 0 }
     this._repeat = ''
     this._statusString = []
+    this._commandKeys = []
   }
 
   private readonly map: { [k: string]: any } = {}
@@ -85,14 +88,46 @@ export default class Motion {
     return false
   }
 
+  public get commandKeys() {
+    if (this._commandKeys.length === 0) return ''
+
+    return this._commandKeys.join('')
+  }
+
   public get statusString() {
-    console.log('getting the status string', this._statusString)
     return this._statusString.join('')
   }
 
   /** Feed a key to the Motion class */
-  // eslint-disable-next-line complexity
+  // eslint-disable-next-line complexity, max-lines-per-function, max-statements
   public feedkey(originalKey: keyof Keys, opts: KeyboardOpts = {}): boolean {
+    if (originalKey === ':') {
+      VIM.Vim.mode = VimMode.COMMAND
+      this._commandKeys.push(':')
+      return false
+    }
+    if (VIM.Vim.mode === VimMode.COMMAND) {
+      if (originalKey === 'Enter') {
+        VIM.Vim.mode = VimMode.NORMAL
+        const command = new Command(this.commandKeys)
+        command.run()
+        this._resetState()
+        return false
+      }
+      if (originalKey === 'Escape') {
+        VIM.Vim.mode = VimMode.NORMAL
+        this._resetState()
+        return false
+      }
+      if (originalKey === 'Backspace') {
+        this._commandKeys.pop()
+        VIM.Statusline.update()
+        return false
+      }
+      this._commandKeys.push(originalKey)
+      VIM.Statusline.update()
+      return false
+    }
     if (this._shouldRepeat(originalKey)) {
       this._repeat += originalKey
       this._statusString.push(originalKey)

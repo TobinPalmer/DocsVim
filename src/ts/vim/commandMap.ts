@@ -12,6 +12,9 @@ export const COMMAND_MAP = Object.freeze({
   },
   VISUAL_LINE: {},
   VISUAL: {
+    r(opts: KeyboardCommand = {}) {
+      if (opts.metaKey) location.reload()
+    },
     escape() {
       VIM.Vim.mode = VimMode.NORMAL
     },
@@ -513,6 +516,13 @@ export const COMMAND_MAP = Object.freeze({
       })
     },
   },
-  COMMAND: {},
+  COMMAND: {
+    escape() {
+      VIM.Vim.mode = VimMode.NORMAL
+    },
+    r(opts: KeyboardCommand = {}) {
+      if (opts.metaKey) location.reload()
+    },
+  },
   RUNNING: {},
 } as const)
