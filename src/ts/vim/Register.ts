@@ -30,9 +30,9 @@ export default class Register {
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
         const newContent: RegisterContent = { content: '' as ClipboardContent, type: CopyTypes.TEXT }
-        // eslint-disable-next-line init-declarations
-        let content: ClipboardContent
+        let content: ClipboardContent = '' as ClipboardContent
 
+        // HACK: We need to wait for the clipboard to be ready
         // eslint-disable-next-line no-magic-numbers
         await new Promise((resolve) => setTimeout(resolve, 50))
 
@@ -40,16 +40,17 @@ export default class Register {
         console.log('THIS IS CONTENT', content)
 
         if (fullLine) {
-          const selection = `\n${content}` as ClipboardContent
-          content = selection ?? ''
+          const selection = (`\n${content}` ?? '') as ClipboardContent
+          content = selection
+
           newContent.content = selection
           newContent.type = CopyTypes.FULL_LINE
+
           this.registerContent.set(VimRegisters.DEFAULT, { content: selection, type: CopyTypes.FULL_LINE })
-          // console.log('getClipboardContent (FULL LINE)}', `->${selection}<-`)
         } else {
           newContent.content = content
+
           this.registerContent.set(VimRegisters.DEFAULT, { content: content ?? '', type: CopyTypes.TEXT })
-          // console.log('getClipboardContent (NON FULL LINE)', `->${content}<-`)
         }
 
         console.log('RETURNING CONTENT', newContent)
