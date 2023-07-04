@@ -93,15 +93,15 @@ export default class DocsInteractions {
   /**
    * Pastes the current text in a buffer
    */
-  public static async pasteFromRegister({ register: buffer }: { register: keyof typeof VimRegisters }) {
-    const text = await VIM.Register.getClipboardContent()
-    console.log('pasteFromRegister', `->${text}<-`)
+  public static pasteFromRegister({ register: buffer }: { register: keyof typeof VimRegisters }) {
+    const text = VIM.Register.register.get(buffer)
+    console.log('pasteFromRegister', text)
 
     if (text === null) return
 
     VIM.CommandQueue.add({
       func: DocsInteractions.pasteText,
-      params: { text: text.content ?? '' },
+      params: { text: text?.content ?? '' },
     })
   }
 
@@ -154,7 +154,7 @@ export default class DocsInteractions {
   /**
    * Copies the current line
    */
-  public static copyCurrentLine({ fullLine }: { fullLine?: boolean } = {}) {
+  public static copyCurrentLine({ fullLine = false }: { fullLine?: boolean } = {}) {
     VIM.CommandQueue.add({
       func: DocsInteractions.pressKey,
       params: { key: 'Home' },
@@ -164,7 +164,7 @@ export default class DocsInteractions {
       params: { key: 'End', opts: { shiftKey: true } },
     })
 
-    VIM.Register.copyText({ fullLine: fullLine ?? false })
+    VIM.Register.copyText({ fullLine })
     setTimeout(() => DocsInteractions.stopSelecting(), 0)
 
     VIM.Vim.mode = VimMode.NORMAL

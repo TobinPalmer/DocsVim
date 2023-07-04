@@ -29,9 +29,8 @@ export default class Register {
       try {
         const newContent: RegisterContent = { content: '' as ClipboardContent, type: TextTypes.TEXT }
         let content = ((await navigator.clipboard.readText()) ?? '') as ClipboardContent
-        console.log('FIRST CHAR OF CONTENT', content[0], `->${content}<-`)
         if (fullLine) {
-          const selection = `\nA${content}\n` as ClipboardContent
+          const selection = `\n${content}` as ClipboardContent
           content = selection ?? ''
           newContent.content = selection
           newContent.type = TextTypes.FULL_LINE
@@ -42,7 +41,8 @@ export default class Register {
           this.registerContent.set(VimRegisters.DEFAULT, { content: content ?? '', type: TextTypes.TEXT })
           console.log('getClipboardContent (NON FULL LINE)', `->${content}<-`)
         }
-        console.log('RETURNING CONTENT', `->${content}<-`)
+        // console.log('RETURNING CONTENT', `->${newContent.content}<-`)
+        console.log('RETURNING CONTENT', newContent)
         // return content as ClipboardContent
         return newContent
         // eslint-disable-next-line no-magic-numbers
@@ -69,15 +69,8 @@ export default class Register {
       delay: 0,
     })
 
-    console.log('copyText ', await this.getClipboardContent({ fullLine }))
-    await this.getClipboardContent({ fullLine }).then((text) => {
-      console.log('copyText NEW', text)
+    console.log('Coying text to clipboard', { fullLine })
 
-      setTimeout(() => {
-        console.log('copyText NEWEST', VIM.Register.register.get(VimRegisters.DEFAULT))
-        // eslint-disable-next-line no-magic-numbers
-      }, 2000)
-    })
     this.registerContent.set(VimRegisters.DEFAULT, {
       content: (await this.getClipboardContent({ fullLine }))?.content ?? ('' as ClipboardContent),
       type: fullLine ? TextTypes.FULL_LINE : TextTypes.TEXT,
