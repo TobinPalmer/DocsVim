@@ -31,3 +31,14 @@ export type KeyboardOpts = Partial<{
   mac: boolean
   afterKeys: { key: keyof Keys; opts: KeyboardOpts }[]
 }>
+
+// eslint-disable-next-line no-shadow
+export enum CopyTypes {
+  TEXT = 'Text',
+  FULL_LINE = 'FullLine',
+}
+
+export interface RegisterContent {
+  type: CopyTypes
+  content: ClipboardContent | null
+}

@@ -1,7 +1,7 @@
 import FormatKey, { Keys } from '../input/FormatKey'
 import { VIM } from '../main'
 import { type Color } from '../types/docTypes'
-import { VimMode, VimRegisters, type KeyboardOpts } from '../types/vimTypes'
+import { ClipboardContent, CopyTypes, VimMode, VimRegisters, type KeyboardOpts } from '../types/vimTypes'
 
 /**
  * This class is used to interact with the google docs page
@@ -81,8 +81,9 @@ export default class DocsInteractions {
     const text = await VIM.Register.getClipboardContent()
     if (text === null) return
 
-    VIM.Register.formatClipboardContent(text).then(() => {
-      VIM.Register.register.set(buffer, { content: text, type: 'Text' })
+    VIM.Register.formatClipboardContent(text.content ?? ('' as ClipboardContent)).then(() => {
+      const { content, type } = text
+      VIM.Register.register.set(buffer, { content, type })
       return new Promise((resolve) => {
         resolve(text)
       })
@@ -100,7 +101,7 @@ export default class DocsInteractions {
 
     VIM.CommandQueue.add({
       func: DocsInteractions.pasteText,
-      params: { text },
+      params: { text: text.content ?? '' },
     })
   }
 

@@ -1,11 +1,6 @@
 import DocsInteractions from '../docs/DocsInteractions'
 import { VIM } from '../main'
-import { type ClipboardContent, VimRegisters } from '../types/vimTypes'
-
-declare interface RegisterContent {
-  type: 'FullLine' | 'Text'
-  content: ClipboardContent | null
-}
+import { RegisterContent, CopyTypes as TextTypes, VimRegisters, type ClipboardContent } from '../types/vimTypes'
 
 /**
  * Register class handles the vim clipboard which is separate from the system clipboard
@@ -18,7 +13,7 @@ export default class Register {
   public async formatClipboardContent(content: ClipboardContent): Promise<void> {
     content = content as ClipboardContent
     await navigator.clipboard.writeText(content)
-    this.registerContent.set(VimRegisters.DEFAULT, { content, type: 'Text' })
+    this.registerContent.set(VimRegisters.DEFAULT, { content, type: TextTypes.TEXT })
   }
 
   /**
@@ -26,25 +21,30 @@ export default class Register {
    * Tries 10 times, every 250ms.
    * If Document isn't focused it will try again.
    */
-  public async getClipboardContent({ fullLine }: { fullLine?: boolean } = {}): Promise<ClipboardContent | null> {
+  public async getClipboardContent({ fullLine }: { fullLine?: boolean } = {}) {
     const maxRetries = 10
     const delay = 250
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
+        const newContent: RegisterContent = { content: '' as ClipboardContent, type: TextTypes.TEXT }
         let content = ((await navigator.clipboard.readText()) ?? '') as ClipboardContent
         console.log('FIRST CHAR OF CONTENT', content[0], `->${content}<-`)
         if (fullLine) {
           const selection = `\nA${content}\n` as ClipboardContent
           content = selection ?? ''
-          this.registerContent.set(VimRegisters.DEFAULT, { content: selection, type: 'Text' })
+          newContent.content = selection
+          newContent.type = TextTypes.FULL_LINE
+          this.registerContent.set(VimRegisters.DEFAULT, { content: selection, type: TextTypes.FULL_LINE })
           console.log('getClipboardContent (FULL LINE)}', `->${selection}<-`)
         } else {
-          this.registerContent.set(VimRegisters.DEFAULT, { content: content ?? '', type: 'Text' })
+          newContent.content = content
+          this.registerContent.set(VimRegisters.DEFAULT, { content: content ?? '', type: TextTypes.TEXT })
           console.log('getClipboardContent (NON FULL LINE)', `->${content}<-`)
         }
         console.log('RETURNING CONTENT', `->${content}<-`)
-        return content as ClipboardContent
+        // return content as ClipboardContent
+        return newContent
         // eslint-disable-next-line no-magic-numbers
       } catch (error) {
         console.error("Document isn't focused, trying again", error)
@@ -79,8 +79,8 @@ export default class Register {
       }, 2000)
     })
     this.registerContent.set(VimRegisters.DEFAULT, {
-      content: (await this.getClipboardContent({ fullLine })) ?? ('' as ClipboardContent),
-      type: 'Text',
+      content: (await this.getClipboardContent({ fullLine }))?.content ?? ('' as ClipboardContent),
+      type: fullLine ? TextTypes.FULL_LINE : TextTypes.TEXT,
     })
   }
 
@@ -88,7 +88,8 @@ export default class Register {
     this.registerContent = new Map<keyof typeof VimRegisters, RegisterContent>()
     this.getClipboardContent()
       .then((content) => {
-        if (content !== null) this.registerContent.set(VimRegisters.DEFAULT, { content, type: 'Text' })
+        if (content !== null)
+          this.registerContent.set(VimRegisters.DEFAULT, { content: content.content, type: TextTypes.TEXT })
       })
       .catch((error) => {
         throw new Error(error)
