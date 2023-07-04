@@ -82,7 +82,7 @@ export default class DocsInteractions {
     if (text === null) return
 
     VIM.Register.formatClipboardContent(text).then(() => {
-      VIM.Register.register.set(buffer, text)
+      VIM.Register.register.set(buffer, { content: text, type: 'Text' })
       return new Promise((resolve) => {
         resolve(text)
       })
@@ -444,7 +444,7 @@ export default class DocsInteractions {
     const CLIPBOARD_COPY_DELAY = 100
 
     setTimeout(() => {
-      const regContent = VIM.Register.register.get(VimRegisters.DEFAULT) ?? ''
+      const regContent = VIM.Register.register.get(VimRegisters.DEFAULT)?.content ?? ''
       const analyse = analyseText(regContent)
       if (analyse.index === null) return
       const queue = VIM.CommandQueue

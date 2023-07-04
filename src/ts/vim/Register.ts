@@ -2,18 +2,23 @@ import DocsInteractions from '../docs/DocsInteractions'
 import { VIM } from '../main'
 import { type ClipboardContent, VimRegisters } from '../types/vimTypes'
 
+declare interface RegisterContent {
+  type: 'FullLine' | 'Text'
+  content: ClipboardContent | null
+}
+
 /**
  * Register class handles the vim clipboard which is separate from the system clipboard
  */
 export default class Register {
   // eslint-disable-next-line no-use-before-define
   private static _instance: Register
-  private readonly registerContent: Map<keyof typeof VimRegisters, string>
+  private readonly registerContent: Map<keyof typeof VimRegisters, RegisterContent>
 
   public async formatClipboardContent(content: ClipboardContent): Promise<void> {
     content = content as ClipboardContent
     await navigator.clipboard.writeText(content)
-    this.registerContent.set(VimRegisters.DEFAULT, content)
+    this.registerContent.set(VimRegisters.DEFAULT, { content, type: 'Text' })
   }
 
   /**
@@ -27,15 +32,15 @@ export default class Register {
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
-        let content = await navigator.clipboard.readText()
+        let content = ((await navigator.clipboard.readText()) ?? '') as ClipboardContent
         console.log('FIRST CHAR OF CONTENT', content[0], `->${content}<-`)
         if (fullLine) {
-          const selection = `\nA${content}\n`
-          content = selection
-          this.registerContent.set(VimRegisters.DEFAULT, selection ?? '')
+          const selection = `\nA${content}\n` as ClipboardContent
+          content = selection ?? ''
+          this.registerContent.set(VimRegisters.DEFAULT, { content: selection, type: 'Text' })
           console.log('getClipboardContent (FULL LINE)}', `->${selection}<-`)
         } else {
-          this.registerContent.set(VimRegisters.DEFAULT, content ?? '')
+          this.registerContent.set(VimRegisters.DEFAULT, { content: content ?? '', type: 'Text' })
           console.log('getClipboardContent (NON FULL LINE)', `->${content}<-`)
         }
         console.log('RETURNING CONTENT', `->${content}<-`)
@@ -73,14 +78,17 @@ export default class Register {
         // eslint-disable-next-line no-magic-numbers
       }, 2000)
     })
-    this.registerContent.set(VimRegisters.DEFAULT, (await this.getClipboardContent({ fullLine })) ?? '')
+    this.registerContent.set(VimRegisters.DEFAULT, {
+      content: (await this.getClipboardContent({ fullLine })) ?? ('' as ClipboardContent),
+      type: 'Text',
+    })
   }
 
   private constructor() {
-    this.registerContent = new Map<keyof typeof VimRegisters, string>()
+    this.registerContent = new Map<keyof typeof VimRegisters, RegisterContent>()
     this.getClipboardContent()
       .then((content) => {
-        if (content !== null) this.registerContent.set(VimRegisters.DEFAULT, content)
+        if (content !== null) this.registerContent.set(VimRegisters.DEFAULT, { content, type: 'Text' })
       })
       .catch((error) => {
         throw new Error(error)
