@@ -1,11 +1,26 @@
 import { VIM } from '../main'
-import Command from './Command'
+import { ErrorString } from '../types/docTypes'
 
 export default class Statusline {
   // eslint-disable-next-line no-use-before-define
   private static _instance: Statusline
   private readonly elem: HTMLDivElement = document.createElement('div')
   private readonly cssElem: HTMLStyleElement = document.createElement('style')
+
+  private static message = ''
+  private static error = ''
+
+  public static showMessage(message: string) {
+    if (Statusline.error !== '') {
+      Statusline.error = ''
+    }
+
+    Statusline.message = message
+  }
+
+  public static showError(error: ErrorString) {
+    Statusline.error = error
+  }
 
   private constructor() {
     this.elem.classList.add('statusline')
@@ -24,7 +39,8 @@ export default class Statusline {
   public update(): void {
     this.elem.innerHTML = `
     -- ${VIM.Vim.mode} --
-    <div class="center error">${Command.status}</div>
+    <div class="center error">${Statusline.error}</div>
+    <div class="center output">${Statusline.error === '' ? Statusline.message : ''}</div>
     <div class="center">${VIM.Motion.commandKeys}</div>
     <div class="right">${VIM.Motion.statusString}</div>
     `
@@ -49,6 +65,9 @@ export default class Statusline {
     .statusline .right {
         margin-left: auto;
         margin-right: 2rem;
+    }
+    .statusline .output {
+      color: black;
     }
     .statusline .error {
       background-color: #ff0000;

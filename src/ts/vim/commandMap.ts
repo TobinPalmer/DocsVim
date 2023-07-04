@@ -24,6 +24,21 @@ export const COMMAND_MAP = Object.freeze({
         params: { key: 'ArrowLeft', opts: { altKey: true, shiftKey: true } },
       })
     },
+    d() {
+      VIM.CommandQueue.add({
+        func: VIM.Register.copyText,
+        params: {},
+        delay: 0,
+      })
+      VIM.CommandQueue.add({
+        func: DocsInteractions.pressKey,
+        params: { key: 'Backspace' },
+      })
+      VIM.CommandQueue.add({
+        func: DocsInteractions.stopSelecting,
+        params: [],
+      })
+    },
     y() {
       VIM.CommandQueue.add({
         func: VIM.Register.copyText,
@@ -157,6 +172,14 @@ export const COMMAND_MAP = Object.freeze({
         })
       }
       return false
+    },
+    g: {
+      g(opts: KeyboardCommand = {}) {
+        VIM.CommandQueue.add({
+          func: DocsInteractions.pressKey,
+          params: { key: 'Home', opts: { ctrlKey: true } },
+        })
+      },
     },
     i(opts: KeyboardCommand = {}) {
       if (opts.shiftKey) {
@@ -389,13 +412,13 @@ export const COMMAND_MAP = Object.freeze({
             params: { key: 'End', opts: { shiftKey: true } },
             delay: 0,
           })
-          DocsInteractions.copyCurrentLine({ fullLine: true }).then(() => {
-            VIM.CommandQueue.add({
-              func: DocsInteractions.pressKey,
-              params: { key: 'Backspace', opts: { shiftKey: true } },
-              delay: 0,
-            })
-          })
+          // DocsInteractions.copyCurrentLine({ fullLine: true }).then(() => {
+          //   VIM.CommandQueue.add({
+          //     func: DocsInteractions.pressKey,
+          //     params: { key: 'Backspace', repeat: 2, opts: { shiftKey: true } },
+          //     delay: 0,
+          //   })
+          // })
         }
         VIM.CommandQueue.add({
           func: DocsInteractions.pressKey,
@@ -498,9 +521,7 @@ export const COMMAND_MAP = Object.freeze({
     },
     y: {
       y() {
-        DocsInteractions.copyCurrentLine({ fullLine: true }).then(() => {
-          console.log('OG', VIM.Register.register.get(VimRegisters.DEFAULT))
-        })
+        DocsInteractions.copyCurrentLine({ fullLine: true })
       },
     },
     Enter() {

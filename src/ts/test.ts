@@ -149,8 +149,62 @@ function homeEndTest(Queue: CommandQueue) {
   Queue.add({ func: DocsInteractions.pasteText, params: { text: '|END|' } })
 }
 
+// Tests pasting and copying to and from the clipboard
+function pasteTest(Queue: CommandQueue) {
+  Queue.add({ func: DocsInteractions.toggleBold, params: [], delay: 100 })
+  Queue.add({
+    func: DocsInteractions.pasteText,
+    params: { text: '\n\nPaste Test\n\n' },
+  })
+  Queue.add({ func: DocsInteractions.toggleBold, params: [], delay: 25 })
+
+  Queue.add({
+    func: DocsInteractions.pasteText,
+    params: { text: 'abcdefghijklmnopqrstuvwxyz\n\n' },
+  })
+
+  // eslint-disable-next-line no-magic-numbers
+  const nonce = Math.random().toString(36)
+  console.log(nonce)
+
+  Queue.add({
+    func: DocsInteractions.pasteText,
+    params: { text: nonce },
+  })
+
+  Queue.add({
+    func: DocsInteractions.copyCurrentLine,
+    params: {},
+  })
+
+  DocsInteractions.copyCurrentLine({ fullLine: true }).then(() => {
+    Queue.add({
+      func: DocsInteractions.pressKey,
+      params: { key: 'End' },
+    })
+    Queue.add({
+      func: DocsInteractions.pasteText,
+      params: { text: 'Pasting from register\n\n' },
+    })
+
+    Queue.add({
+      func: DocsInteractions.pasteFromRegister,
+      params: { register: VimRegisters.DEFAULT },
+    })
+  })
+  // setTimeout(() => {
+  //   console.log('Text Cooler', VIM.Register.register.get(VimRegisters.DEFAULT))
+  //   // eslint-disable-next-line no-magic-numbers
+  // }, 2000)
+
+  // Queue.add({
+  //   func: DocsInteractions.pasteFromRegister,
+  //   params: { register: VimRegisters.DEFAULT },
+  // })
+}
+
 // Test Function
-export default function test(suite?: ('home' | 'jump' | 'color' | 'style' | 'copy')[]) {
+export default function docsTest(suite?: ('home' | 'jump' | 'color' | 'style' | 'copy' | 'paste')[]) {
   const Queue = VIM.CommandQueue
   if (!suite) return
   DocsInteractions.clearDocument({})
@@ -160,4 +214,5 @@ export default function test(suite?: ('home' | 'jump' | 'color' | 'style' | 'cop
   if (suite.includes('jump')) jumpTest(Queue)
   if (suite.includes('home')) homeEndTest(Queue)
   if (suite.includes('copy')) copyTest(Queue)
+  if (suite.includes('paste')) pasteTest(Queue)
 }

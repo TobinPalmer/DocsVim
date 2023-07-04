@@ -40,7 +40,6 @@ export default class DocsInteractions {
       10,
     )
   }
-
   /**
    * Stops selecting text
    */
@@ -55,7 +54,6 @@ export default class DocsInteractions {
       params: { key: 'ArrowLeft' },
     })
     VIM.Vim.mode = VimMode.NORMAL
-    // VIM.Vim.mode = oldMode
   }
 
   /**
@@ -82,6 +80,7 @@ export default class DocsInteractions {
   public static async getTextFromRegister({ register: buffer }: { register: keyof typeof VimRegisters }) {
     const text = await VIM.Register.getClipboardContent()
     if (text === null) return
+
     VIM.Register.formatClipboardContent(text).then(() => {
       VIM.Register.register.set(buffer, text)
       return new Promise((resolve) => {
@@ -95,20 +94,13 @@ export default class DocsInteractions {
    */
   public static async pasteFromRegister({ register: buffer }: { register: keyof typeof VimRegisters }) {
     const text = await VIM.Register.getClipboardContent()
+    console.log('pasteFromRegister', `->${text}<-`)
+
     if (text === null) return
-    VIM.Register.formatClipboardContent(text).then(() => {
-      VIM.CommandQueue.add({
-        func: DocsInteractions._openEditMenu,
-        params: [],
-      })
-      VIM.CommandQueue.add({
-        func: DocsInteractions.pressHTMLElement,
-        params: {
-          selector: '[id=":77"]',
-          clickingMenuItem: false,
-          repeat: 2,
-        },
-      })
+
+    VIM.CommandQueue.add({
+      func: DocsInteractions.pasteText,
+      params: { text },
     })
   }
 
@@ -171,15 +163,12 @@ export default class DocsInteractions {
       params: { key: 'End', opts: { shiftKey: true } },
     })
 
-    VIM.Register.copyText({ fullLine: fullLine ?? false }).then(() => {
-      DocsInteractions.stopSelecting()
-    })
+    VIM.Register.copyText({ fullLine: fullLine ?? false })
+    setTimeout(() => DocsInteractions.stopSelecting(), 0)
 
     VIM.Vim.mode = VimMode.NORMAL
 
-    return new Promise((resolve) => {
-      resolve(VIM.Register.register.get(VimRegisters.DEFAULT))
-    })
+    return new Promise((resolve: (value: null) => void) => setTimeout(() => resolve(null), 0))
   }
 
   /**
@@ -202,7 +191,7 @@ export default class DocsInteractions {
   }
 
   /**
-   * Gets the users cursors elemenet
+   * Gets the users cursors element
    */
   static get getUserCursor(): Element | null {
     let cursor: Element | null = null
@@ -418,10 +407,21 @@ export default class DocsInteractions {
     forward?: boolean
     repeat?: number
   }): void {
-    if (forward) VIM.CommandQueue.add({ func: DocsInteractions.copyToEnd, params: { fullLine: true } })
-    else VIM.CommandQueue.add({ func: DocsInteractions.copyToStart, params: { fullLine: true } })
+    if (forward)
+      VIM.CommandQueue.add({
+        func: DocsInteractions.copyToEnd,
+        params: { fullLine: true },
+      })
+    else
+      VIM.CommandQueue.add({
+        func: DocsInteractions.copyToStart,
+        params: { fullLine: true },
+      })
 
-    VIM.CommandQueue.add({ func: DocsInteractions.getTextFromRegister, params: { register: VimRegisters.DEFAULT } })
+    VIM.CommandQueue.add({
+      func: DocsInteractions.getTextFromRegister,
+      params: { register: VimRegisters.DEFAULT },
+    })
 
     function analyseText(text: string) {
       console.log('analysing', text)
@@ -432,9 +432,7 @@ export default class DocsInteractions {
       if (!forward) arr.reverse()
       for (let i = 0; i < arr.length; i++) {
         if (arr[i] === target) {
-          if (count === repeat) {
-            index = i
-          }
+          if (count === repeat) index = i
           count++
         }
       }
@@ -444,6 +442,7 @@ export default class DocsInteractions {
     }
 
     const CLIPBOARD_COPY_DELAY = 100
+
     setTimeout(() => {
       const regContent = VIM.Register.register.get(VimRegisters.DEFAULT) ?? ''
       const analyse = analyseText(regContent)

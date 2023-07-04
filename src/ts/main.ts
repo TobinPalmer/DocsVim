@@ -1,5 +1,5 @@
 import DocsInteractions from './docs/DocsInteractions'
-import test from './test'
+import docsTest from './test'
 import CommandQueue from './vim/CommandQueue'
 import Motion from './vim/Motion'
 import Register from './vim/Register'
@@ -27,8 +27,8 @@ VIM.Statusline.update()
 const START_DELAY = 0
 
 setTimeout(() => {
-  // test(['home', 'jump', 'color', 'style'])
-  // test(['copy'])
+  // test(['home', 'jump', 'color', 'style', 'paste'])
+  // docsTest(['paste'])
 }, START_DELAY)
 
 // VIM.motion.feedkey('normal')

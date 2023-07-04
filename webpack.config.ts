@@ -7,7 +7,7 @@ import webpack from 'webpack'
 const config: webpack.Configuration = {
   target: 'web',
 
-  //externals: [nodeExternals()],
+  // externals: [nodeExternals()],
 
   mode: 'development',
 
