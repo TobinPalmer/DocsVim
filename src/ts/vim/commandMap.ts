@@ -26,8 +26,8 @@ export const COMMAND_MAP = Object.freeze({
     },
     d() {
       VIM.CommandQueue.add({
-        func: VIM.Register.copyText,
         params: {},
+        func: VIM.Register.copyText,
         delay: 0,
       })
       VIM.CommandQueue.add({
@@ -40,14 +40,11 @@ export const COMMAND_MAP = Object.freeze({
       })
     },
     y() {
-      VIM.CommandQueue.add({
-        func: VIM.Register.copyText,
-        params: { fullLine: true },
-        delay: 0,
-      })
-      VIM.CommandQueue.add({
-        func: DocsInteractions.stopSelecting,
-        params: [],
+      VIM.Register.copyText({ fullLine: false }).then(() => {
+        VIM.CommandQueue.add({
+          func: DocsInteractions.stopSelecting,
+          params: [],
+        })
       })
     },
     w() {
@@ -267,10 +264,10 @@ export const COMMAND_MAP = Object.freeze({
       })
     },
     p() {
-      VIM.CommandQueue.add({
-        func: DocsInteractions.pressKey,
-        params: { key: 'End' },
-      })
+      // VIM.CommandQueue.add({
+      //   func: DocsInteractions.pressKey,
+      //   params: { key: 'End' },
+      // })
       return VIM.CommandQueue.add({
         func: DocsInteractions.pasteFromRegister,
         params: { register: VimRegisters.DEFAULT },

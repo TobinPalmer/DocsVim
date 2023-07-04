@@ -95,10 +95,15 @@ export default class DocsInteractions {
    */
   public static pasteFromRegister({ register: buffer }: { register: keyof typeof VimRegisters }) {
     const text = VIM.Register.register.get(buffer)
-    console.log('pasteFromRegister', text)
 
     if (text === null) return
 
+    if (text?.type === CopyTypes.FULL_LINE) {
+      VIM.CommandQueue.add({
+        func: DocsInteractions.pressKey,
+        params: { key: 'End' },
+      })
+    }
     VIM.CommandQueue.add({
       func: DocsInteractions.pasteText,
       params: { text: text?.content ?? '' },
@@ -164,8 +169,9 @@ export default class DocsInteractions {
       params: { key: 'End', opts: { shiftKey: true } },
     })
 
-    VIM.Register.copyText({ fullLine })
-    setTimeout(() => DocsInteractions.stopSelecting(), 0)
+    VIM.Register.copyText({ fullLine }).then(() => {
+      DocsInteractions.stopSelecting()
+    })
 
     VIM.Vim.mode = VimMode.NORMAL
 

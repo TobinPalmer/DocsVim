@@ -1,6 +1,6 @@
-import DocsInteractions from '../docs/DocsInteractions'
 import { VIM } from '../main'
-import { RegisterContent, CopyTypes as TextTypes, VimRegisters, type ClipboardContent } from '../types/vimTypes'
+import DocsInteractions from '../docs/DocsInteractions'
+import { type RegisterContent, CopyTypes, VimRegisters, type ClipboardContent } from '../types/vimTypes'
 
 /**
  * Register class handles the vim clipboard which is separate from the system clipboard
@@ -13,7 +13,7 @@ export default class Register {
   public async formatClipboardContent(content: ClipboardContent): Promise<void> {
     content = content as ClipboardContent
     await navigator.clipboard.writeText(content)
-    this.registerContent.set(VimRegisters.DEFAULT, { content, type: TextTypes.TEXT })
+    this.registerContent.set(VimRegisters.DEFAULT, { content, type: CopyTypes.TEXT })
   }
 
   /**
@@ -21,44 +21,53 @@ export default class Register {
    * Tries 10 times, every 250ms.
    * If Document isn't focused it will try again.
    */
-  public async getClipboardContent({ fullLine }: { fullLine?: boolean } = {}) {
+  public async getClipboardContent({ fullLine = false }: { fullLine?: boolean } = {}) {
+    console.log('Getting clipboard content', { fullLine })
+
     const maxRetries = 10
     const delay = 250
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
-        const newContent: RegisterContent = { content: '' as ClipboardContent, type: TextTypes.TEXT }
-        let content = ((await navigator.clipboard.readText()) ?? '') as ClipboardContent
+        const newContent: RegisterContent = { content: '' as ClipboardContent, type: CopyTypes.TEXT }
+        // eslint-disable-next-line init-declarations
+        let content: ClipboardContent
+
+        // eslint-disable-next-line no-magic-numbers
+        await new Promise((resolve) => setTimeout(resolve, 50))
+
+        content = ((await navigator.clipboard.readText()) ?? '') as ClipboardContent
+        console.log('THIS IS CONTENT', content)
+
         if (fullLine) {
           const selection = `\n${content}` as ClipboardContent
           content = selection ?? ''
           newContent.content = selection
-          newContent.type = TextTypes.FULL_LINE
-          this.registerContent.set(VimRegisters.DEFAULT, { content: selection, type: TextTypes.FULL_LINE })
-          console.log('getClipboardContent (FULL LINE)}', `->${selection}<-`)
+          newContent.type = CopyTypes.FULL_LINE
+          this.registerContent.set(VimRegisters.DEFAULT, { content: selection, type: CopyTypes.FULL_LINE })
+          // console.log('getClipboardContent (FULL LINE)}', `->${selection}<-`)
         } else {
           newContent.content = content
-          this.registerContent.set(VimRegisters.DEFAULT, { content: content ?? '', type: TextTypes.TEXT })
-          console.log('getClipboardContent (NON FULL LINE)', `->${content}<-`)
+          this.registerContent.set(VimRegisters.DEFAULT, { content: content ?? '', type: CopyTypes.TEXT })
+          // console.log('getClipboardContent (NON FULL LINE)', `->${content}<-`)
         }
-        // console.log('RETURNING CONTENT', `->${newContent.content}<-`)
+
         console.log('RETURNING CONTENT', newContent)
-        // return content as ClipboardContent
         return newContent
-        // eslint-disable-next-line no-magic-numbers
       } catch (error) {
         console.error("Document isn't focused, trying again", error)
         await new Promise((resolve) => setTimeout(resolve, delay))
       }
     }
 
+    // Retry attempts exhausted, return null
     return null
   }
 
   /**
    * Copies text that is selected by the user
    */
-  public async copyText({ fullLine = false }: { fullLine?: boolean } = {}) {
+  public copyText({ fullLine = false }: { fullLine?: boolean } = {}) {
     VIM.CommandQueue.add({
       func: DocsInteractions.pressHTMLElement,
       params: { selector: '#docs-edit-menu' },
@@ -69,12 +78,16 @@ export default class Register {
       delay: 0,
     })
 
-    console.log('Coying text to clipboard', { fullLine })
+    DocsInteractions.stopSelecting()
+    setTimeout(async () => {
+      this.registerContent.set(VimRegisters.DEFAULT, {
+        content: (await this.getClipboardContent({ fullLine }))?.content ?? ('' as ClipboardContent),
+        type: fullLine ? CopyTypes.FULL_LINE : CopyTypes.TEXT,
+      })
+      // eslint-disable-next-line no-magic-numbers
+    }, 10)
 
-    this.registerContent.set(VimRegisters.DEFAULT, {
-      content: (await this.getClipboardContent({ fullLine }))?.content ?? ('' as ClipboardContent),
-      type: fullLine ? TextTypes.FULL_LINE : TextTypes.TEXT,
-    })
+    return new Promise((resolve) => setTimeout(resolve, 0))
   }
 
   private constructor() {
@@ -82,7 +95,7 @@ export default class Register {
     this.getClipboardContent()
       .then((content) => {
         if (content !== null)
-          this.registerContent.set(VimRegisters.DEFAULT, { content: content.content, type: TextTypes.TEXT })
+          this.registerContent.set(VimRegisters.DEFAULT, { content: content.content, type: CopyTypes.TEXT })
       })
       .catch((error) => {
         throw new Error(error)
