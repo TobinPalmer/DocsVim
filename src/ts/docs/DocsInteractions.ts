@@ -78,6 +78,15 @@ export default class DocsInteractions {
     )
   }
 
+  public static correctCursorSize() {
+    const DELAY = 0
+    setTimeout(() => {
+      console.log('Correcting cursor size')
+      const currentFontSize = this.getFontSize()
+      this.setCursorWidth({ width: currentFontSize / 2 })
+    }, DELAY)
+  }
+
   /**
    * Stops selecting text
    */

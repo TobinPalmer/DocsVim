@@ -4,7 +4,7 @@ import Statusline from './Statusline'
 
 export default class Command {
   private static _hasError = false
-  private _command: string | null = null
+  private readonly _command: string | null = null
   private map = new Map([
     ['w', () => cmdMap.write()],
     ['write', () => cmdMap.write()],

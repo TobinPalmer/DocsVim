@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Keys } from '../input/FormatKey'
 import { VIM } from '../main'
-import { VimBreakCodes, VimMode, type KeyboardOpts } from '../types/vimTypes'
+import { type KeyboardOpts, VimBreakCodes, VimMode } from '../types/vimTypes'
 import Command from './Command'
 import { COMMAND_MAP } from './commandMap'
 
@@ -29,73 +29,20 @@ export default class Motion {
   private _repeat = ''
   private _needsAfterKeys: needsAfterKeys = { status: false, requiredKeys: 0 }
   private _originalOpts: KeyboardOpts = {}
-  private _statusString: string[] = []
-  private _commandKeys: string[] = []
-
-  /**
-   * Detects if a key should repeat.
-   */
-  private _shouldRepeat(key: string) {
-    if (this._currentKeys.length === 0 && /[0-9]/.exec(key)) {
-      if (this._repeat === '' && key === '0') return false
-      return true
-    }
-    return false
-  }
-
-  /**
-   * Reset the state of the Motion class
-   */
-  private _resetState() {
-    this._currentKeys = []
-    this._afterKeys = []
-    this._needsAfterKeys = { status: false, requiredKeys: 0 }
-    this._repeat = ''
-    this._statusString = []
-    this._commandKeys = []
-  }
-
   private readonly map: { [k: string]: any } = {}
 
-  /**
-   * Checks if a function returns a break code
-   * Functions like `f` return a break code because they need characters after them
-   */
-  private _functionReturnsBreakCode(func: any): func is VimBreakCodesReturnType {
-    if (typeof func === 'undefined') return false
-    if (this.map[func.code] === true) return true
+  private _statusString: string[] = []
 
-    // Checks if the functions return type contains { code: string, required: number}
-    const codeInFunc = (testFunction: any): testFunction is VimBreakCodesReturnType => {
-      if (typeof testFunction === 'undefined' || testFunction === null) return false
-      if (
-        'code' in testFunction &&
-        'required' in testFunction &&
-        typeof testFunction.code === 'string' &&
-        typeof testFunction.required === 'number'
-      ) {
-        this.map[testFunction.code] = true
-        return true
-      }
-      return false
-    }
-
-    if (codeInFunc(func) && Object.values(VimBreakCodes).includes(func.code)) {
-      console.log('calling')
-      return true
-    }
-
-    return false
+  public get statusString() {
+    return this._statusString.join('')
   }
+
+  private _commandKeys: string[] = []
 
   public get commandKeys() {
     if (this._commandKeys.length === 0) return ''
 
     return this._commandKeys.join('')
-  }
-
-  public get statusString() {
-    return this._statusString.join('')
   }
 
   /** Feed a key to the Motion class */
@@ -188,5 +135,58 @@ export default class Motion {
     }
 
     return true
+  }
+
+  /**
+   * Detects if a key should repeat.
+   */
+  private _shouldRepeat(key: string) {
+    if (this._currentKeys.length === 0 && /[0-9]/.exec(key)) {
+      return !(this._repeat === '' && key === '0')
+    }
+    return false
+  }
+
+  /**
+   * Reset the state of the Motion class
+   */
+  private _resetState() {
+    this._currentKeys = []
+    this._afterKeys = []
+    this._needsAfterKeys = { status: false, requiredKeys: 0 }
+    this._repeat = ''
+    this._statusString = []
+    this._commandKeys = []
+  }
+
+  /**
+   * Checks if a function returns a break code
+   * Functions like `f` return a break code because they need characters after them
+   */
+  private _functionReturnsBreakCode(func: any): func is VimBreakCodesReturnType {
+    if (typeof func === 'undefined') return false
+    if (this.map[func.code] === true) return true
+
+    // Checks if the functions return type contains { code: string, required: number}
+    const codeInFunc = (testFunction: any): testFunction is VimBreakCodesReturnType => {
+      if (typeof testFunction === 'undefined' || testFunction === null) return false
+      if (
+        'code' in testFunction &&
+        'required' in testFunction &&
+        typeof testFunction.code === 'string' &&
+        typeof testFunction.required === 'number'
+      ) {
+        this.map[testFunction.code] = true
+        return true
+      }
+      return false
+    }
+
+    if (codeInFunc(func) && Object.values(VimBreakCodes).includes(func.code)) {
+      console.log('calling')
+      return true
+    }
+
+    return false
   }
 }

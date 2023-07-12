@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { VIM } from '../main'
+import DocsInteractions from '../docs/DocsInteractions'
 
 /**
  * The interface for the parameters of a command
@@ -40,6 +41,13 @@ export default class CommandQueue {
   private delayTimer: ReturnType<typeof setTimeout> | null = null
 
   /**
+   * Returns the current stack of commands
+   */
+  public get stack() {
+    return this.commandStack
+  }
+
+  /**
    * Adds a command to a list of commands to be executed, in order
    * @param command The object of the command to add
    */
@@ -71,6 +79,10 @@ export default class CommandQueue {
     // If there is no next command, return
     if (typeof nextCommand === 'undefined') return
 
+    if (nextCommand.func === DocsInteractions.pressKey) {
+      DocsInteractions.correctCursorSize()
+    }
+
     // Run the command
     // Check if the comands params includes repeat and that the value is not bigger than VIM.VARIABLES.EXCESSIVE_REPEAT, if it is, set it to 0
     if (
@@ -85,12 +97,5 @@ export default class CommandQueue {
     this.delayTimer = setTimeout(() => {
       this.runCommands()
     }, nextCommand.delay)
-  }
-
-  /**
-   * Returns the current stack of commands
-   */
-  public get stack() {
-    return this.commandStack
   }
 }

@@ -522,7 +522,8 @@ export const COMMAND_MAP = Object.freeze({
     },
     y: {
       y() {
-        DocsInteractions.copyCurrentLine({ fullLine: true })
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        DocsInteractions.copyCurrentLine({ fullLine: true }).then(() => {})
       },
     },
     Enter() {
