@@ -3,9 +3,8 @@ import cmdMap from './cmdMap'
 import Statusline from './Statusline'
 
 export default class Command {
-  private static _hasError = false
   private readonly _command: string | null = null
-  private map = new Map([
+  private readonly map = new Map([
     ['w', () => cmdMap.write()],
     ['write', () => cmdMap.write()],
     ['q', () => cmdMap.quit()],
