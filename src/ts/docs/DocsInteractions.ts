@@ -131,9 +131,7 @@ export default class DocsInteractions {
     VIM.Register.formatClipboardContent(text.content ?? ('' as ClipboardContent)).then(() => {
       const { content, type } = text
       VIM.Register.register.set(buffer, { content, type })
-      return new Promise((resolve) => {
-        resolve(text)
-      })
+      return Promise.resolve(text)
     })
   }
 
@@ -175,9 +173,7 @@ export default class DocsInteractions {
 
     VIM.Vim.mode = VimMode.NORMAL
 
-    return new Promise((resolve) => {
-      resolve(VIM.Register.register.get(VimRegisters.DEFAULT))
-    })
+    return Promise.resolve(VIM.Register.register.get(VimRegisters.DEFAULT))
   }
 
   /**
@@ -198,9 +194,7 @@ export default class DocsInteractions {
 
     VIM.Vim.mode = VimMode.NORMAL
 
-    return new Promise((resolve) => {
-      resolve(VIM.Register.register.get(VimRegisters.DEFAULT))
-    })
+    return Promise.resolve(VIM.Register.register.get(VimRegisters.DEFAULT))
   }
 
   /**
