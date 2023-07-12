@@ -516,7 +516,7 @@ export default class DocsInteractions {
    */
   public static undo(): void {
     DocsInteractions._openEditMenu()
-    DocsInteractions.pressHTMLElement({ selector: '[id=":72"]', repeat: 1 })
+    DocsInteractions.pressHTMLElement({ selector: '[id=":71"]', repeat: 1 })
   }
 
   /**
