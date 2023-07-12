@@ -1,4 +1,6 @@
-import * as esbuild from 'esbuild'
+// import * as esbuild from 'esbuild'
+import esbuild from 'esbuild'
+
 import { minifyTemplates, writeFiles } from 'esbuild-minify-templates'
 import { copy } from 'esbuild-plugin-copy'
 import eslint from 'esbuild-plugin-eslint'
