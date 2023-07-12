@@ -1,6 +1,6 @@
 import DocsInteractions from '../docs/DocsInteractions'
 import { VIM } from '../main'
-import { VimBreakCodes, VimMode, VimRegisters, type KeyboardOpts } from '../types/vimTypes'
+import { type KeyboardOpts, VimBreakCodes, VimMode, VimRegisters } from '../types/vimTypes'
 
 type KeyboardCommand = KeyboardOpts & { repeat?: number }
 
@@ -171,7 +171,7 @@ export const COMMAND_MAP = Object.freeze({
       return false
     },
     g: {
-      g(opts: KeyboardCommand = {}) {
+      g() {
         VIM.CommandQueue.add({
           func: DocsInteractions.pressKey,
           params: { key: 'Home', opts: { ctrlKey: true } },

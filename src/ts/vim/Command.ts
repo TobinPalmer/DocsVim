@@ -1,11 +1,33 @@
-import { VIM } from '../main'
 import { ErrorString } from '../types/docTypes'
 import cmdMap from './cmdMap'
 import Statusline from './Statusline'
 
 export default class Command {
-  private _command: string | null = null
   private static _hasError = false
+  private _command: string | null = null
+  private map = new Map([
+    ['w', () => cmdMap.write()],
+    ['write', () => cmdMap.write()],
+    ['q', () => cmdMap.quit()],
+    ['quit', () => cmdMap.quit()],
+    ['qa', () => cmdMap.quit()],
+    ['wqa', () => cmdMap.quit()],
+  ])
+
+  constructor(command: string) {
+    if (!this.validateCommand(command)) {
+      Command.triggerError(command)
+      return
+    }
+    this._command = command.slice(1)
+  }
+
+  public static get status() {
+    if (Command._hasError) {
+      return 'Not an editor command'
+    }
+    return ''
+  }
 
   public static createError(error: string): ErrorString {
     return `Not an editor command: ${error.substring(1)}` as ErrorString
@@ -31,38 +53,13 @@ export default class Command {
     Statusline.showError(Command.createError(command))
   }
 
-  private map = new Map([
-    ['w', () => cmdMap.write()],
-    ['write', () => cmdMap.write()],
-    ['q', () => cmdMap.quit()],
-    ['quit', () => cmdMap.quit()],
-    ['qa', () => cmdMap.quit()],
-    ['wqa', () => cmdMap.quit()],
-  ])
-
-  private validateCommand(command: string) {
-    command = command.slice(1)
-    if (this.map.has(command)) return true
-    return false
-  }
-
-  public static get status() {
-    if (Command._hasError) {
-      return 'Not an editor command'
-    }
-    return ''
-  }
-
   public run() {
     if (this._command === null) return
     this.map.get(this._command)?.()
   }
 
-  constructor(command: string) {
-    if (!this.validateCommand(command)) {
-      Command.triggerError(command)
-      return
-    }
-    this._command = command.slice(1)
+  private validateCommand(command: string) {
+    command = command.slice(1)
+    return this.map.has(command)
   }
 }

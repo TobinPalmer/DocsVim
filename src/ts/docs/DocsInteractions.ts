@@ -1,7 +1,7 @@
 import FormatKey, { Keys } from '../input/FormatKey'
 import { VIM } from '../main'
 import { type Color } from '../types/docTypes'
-import { ClipboardContent, CopyTypes, VimMode, VimRegisters, type KeyboardOpts } from '../types/vimTypes'
+import { ClipboardContent, CopyTypes, type KeyboardOpts, VimMode, VimRegisters } from '../types/vimTypes'
 
 /**
  * This class is used to interact with the google docs page
@@ -32,14 +32,52 @@ export default class DocsInteractions {
   }
 
   /**
+   * Gets the users cursors element
+   */
+  static get getUserCursor(): Element | null {
+    let cursor: Element | null = null
+
+    document.querySelectorAll('.kix-cursor').forEach((element) => {
+      const caretColor = element.querySelector('.kix-cursor-caret')
+      if (caretColor === null) return
+
+      const cursorName = (element.querySelector('.kix-cursor-name')?.textContent ?? '').trim()
+
+      if (cursorName.length <= 0) cursor = element
+    })
+    if (cursor !== null) return cursor
+
+    return document.querySelector('.kix-cursor')
+  }
+
+  /**
+   * Gets the google docs text target
+   */
+  public static get textTarget(): () => Promise<HTMLElement> {
+    return async () =>
+      (
+        (
+          (await this._waitForElm({
+            selector: '.docs-texteventtarget-iframe',
+          })) as HTMLIFrameElement
+        ).contentDocument as Document
+      ).activeElement as HTMLElement
+  }
+
+  /**
    * Returns the font size of the google doc
    */
   public static getFontSize(): number {
     return parseInt(
-      (document.querySelector('[id=":16"] .goog-toolbar-combo-button-input.jfk-textinput') as HTMLInputElement).value,
+      (
+        document.querySelector(
+          '#fontSizeSelect .goog-toolbar-combo-button-outer-box.goog-inline-block .goog-toolbar-combo-button-input.jfk-textinput',
+        ) as HTMLInputElement
+      ).value,
       10,
     )
   }
+
   /**
    * Stops selecting text
    */
@@ -195,25 +233,6 @@ export default class DocsInteractions {
     caret.style.setProperty('border-color', cursorColor, 'important')
     caret.style.mixBlendMode = 'difference'
     return true
-  }
-
-  /**
-   * Gets the users cursors element
-   */
-  static get getUserCursor(): Element | null {
-    let cursor: Element | null = null
-
-    document.querySelectorAll('.kix-cursor').forEach((element) => {
-      const caretColor = element.querySelector('.kix-cursor-caret')
-      if (caretColor === null) return
-
-      const cursorName = (element.querySelector('.kix-cursor-name')?.textContent ?? '').trim()
-
-      if (cursorName.length <= 0) cursor = element
-    })
-    if (cursor !== null) return cursor
-
-    return document.querySelector('.kix-cursor')
   }
 
   /**
@@ -471,27 +490,6 @@ export default class DocsInteractions {
   }
 
   /**
-   * Opens the color menu
-   */
-  private static _openColorMenu(): void {
-    DocsInteractions.pressHTMLElement({ selector: '#textColorButton' })
-  }
-
-  /**
-   * Opens the highlights menu
-   */
-  private static _openHighlightMenu(): void {
-    DocsInteractions.pressHTMLElement({ selector: '#bgColorButton' })
-  }
-
-  /**
-   * Opens the undo menu
-   */
-  private static _openEditMenu(): void {
-    DocsInteractions.pressHTMLElement({ selector: '#docs-edit-menu' })
-  }
-
-  /**
    * Picks a highlight color
    * @param color the color to pick
    */
@@ -518,41 +516,6 @@ export default class DocsInteractions {
   public static copy(): void {
     DocsInteractions._openEditMenu()
     DocsInteractions.pressHTMLElement({ selector: '[id=":76"]', repeat: 2 })
-  }
-
-  /**
-   * Waits for element to exist, then runs callback
-   */
-  private static _waitForElm({ selector }: { selector: string }): Promise<HTMLElement> {
-    return new Promise((resolve) => {
-      if (document.querySelector(selector)) return resolve(document.querySelector(selector) as HTMLElement)
-
-      const observer = new MutationObserver(() => {
-        if (document.querySelector(selector)) {
-          resolve(document.querySelector(selector) as HTMLElement)
-          observer.disconnect()
-        }
-      })
-
-      return observer.observe(document.body, {
-        childList: true,
-        subtree: true,
-      })
-    })
-  }
-
-  /**
-   * Gets the google docs text target
-   */
-  public static get textTarget(): () => Promise<HTMLElement> {
-    return async () =>
-      (
-        (
-          (await this._waitForElm({
-            selector: '.docs-texteventtarget-iframe',
-          })) as HTMLIFrameElement
-        ).contentDocument as Document
-      ).activeElement as HTMLElement
   }
 
   /**
@@ -620,6 +583,7 @@ export default class DocsInteractions {
   }) {
     const element = document.querySelector(selector)
     if (!element) return
+    console.log('Pressing', element)
 
     const opts = { bubbles: true }
 
@@ -643,5 +607,47 @@ export default class DocsInteractions {
       element.dispatchEvent(events.click)
       element.dispatchEvent(events.mouseleave)
     }
+  }
+
+  /**
+   * Opens the color menu
+   */
+  private static _openColorMenu(): void {
+    DocsInteractions.pressHTMLElement({ selector: '#textColorButton' })
+  }
+
+  /**
+   * Opens the highlights menu
+   */
+  private static _openHighlightMenu(): void {
+    DocsInteractions.pressHTMLElement({ selector: '#bgColorButton' })
+  }
+
+  /**
+   * Opens the undo menu
+   */
+  private static _openEditMenu(): void {
+    DocsInteractions.pressHTMLElement({ selector: '#docs-edit-menu' })
+  }
+
+  /**
+   * Waits for element to exist, then runs callback
+   */
+  private static _waitForElm({ selector }: { selector: string }): Promise<HTMLElement> {
+    return new Promise((resolve) => {
+      if (document.querySelector(selector)) return resolve(document.querySelector(selector) as HTMLElement)
+
+      const observer = new MutationObserver(() => {
+        if (document.querySelector(selector)) {
+          resolve(document.querySelector(selector) as HTMLElement)
+          observer.disconnect()
+        }
+      })
+
+      return observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+      })
+    })
   }
 }

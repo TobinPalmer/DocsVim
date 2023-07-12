@@ -1,6 +1,6 @@
 import DocsInteractions from '../docs/DocsInteractions'
 import { VIM } from '../main'
-import { VimMode, type KeyboardOpts } from '../types/vimTypes'
+import { type KeyboardOpts, VimMode } from '../types/vimTypes'
 
 /**
  * Vim class that handles different vim modes and input
@@ -9,6 +9,7 @@ export default class Vim {
   private _mode: VimMode = VimMode.INSERT
 
   /**
+   if
    * Gets the current mode
    */
   public get mode(): VimMode {
@@ -18,6 +19,7 @@ export default class Vim {
   /**
    * Sets the current mode
    * @param mode the mode to set
+   if
    */
   public set mode(mode: VimMode) {
     setTimeout(() => {
@@ -55,6 +57,7 @@ export default class Vim {
   /**
    * Handles a key down press event.
    * @param key the key to handle
+   * @param opts the options to pass to the keydown event
    */
   public keydown(key: string, opts: KeyboardOpts = {}): boolean {
     // opts.mac = opts.mac ?? this._mode === VimMode.insert

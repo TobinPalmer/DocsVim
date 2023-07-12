@@ -1,6 +1,6 @@
-import { VIM } from '../main'
 import DocsInteractions from '../docs/DocsInteractions'
-import { type RegisterContent, CopyTypes, VimRegisters, type ClipboardContent } from '../types/vimTypes'
+import { type ClipboardContent, CopyTypes, type RegisterContent, VimRegisters } from '../types/vimTypes'
+import { VIM } from '../main'
 
 /**
  * Register class handles the vim clipboard which is separate from the system clipboard
@@ -9,6 +9,28 @@ export default class Register {
   // eslint-disable-next-line no-use-before-define
   private static _instance: Register
   private readonly registerContent: Map<keyof typeof VimRegisters, RegisterContent>
+
+  private constructor() {
+    this.registerContent = new Map<keyof typeof VimRegisters, RegisterContent>()
+    this.getClipboardContent()
+      .then((content) => {
+        if (content !== null)
+          this.registerContent.set(VimRegisters.DEFAULT, { content: content.content, type: CopyTypes.TEXT })
+      })
+      .catch((error) => {
+        throw new Error(error)
+      })
+  }
+
+  // Gets an instance of the Register class
+  public static get Instance() {
+    return this._instance || (this._instance = new this())
+  }
+
+  // Gets the current register
+  public get register() {
+    return this.registerContent
+  }
 
   public async formatClipboardContent(content: ClipboardContent): Promise<void> {
     content = content as ClipboardContent
@@ -72,44 +94,22 @@ export default class Register {
     VIM.CommandQueue.add({
       func: DocsInteractions.pressHTMLElement,
       params: { selector: '#docs-edit-menu' },
-    })
-    VIM.CommandQueue.add({
-      func: DocsInteractions.pressHTMLElement,
-      params: { selector: '[id=":76"]' },
       delay: 0,
     })
 
-    DocsInteractions.stopSelecting()
+    VIM.CommandQueue.add({
+      func: DocsInteractions.pressHTMLElement,
+      params: { selector: '[id=":75"]', repeat: 2 },
+      delay: 0,
+    })
+
     setTimeout(async () => {
       this.registerContent.set(VimRegisters.DEFAULT, {
         content: (await this.getClipboardContent({ fullLine }))?.content ?? ('' as ClipboardContent),
         type: fullLine ? CopyTypes.FULL_LINE : CopyTypes.TEXT,
       })
-      // eslint-disable-next-line no-magic-numbers
-    }, 10)
+    })
 
     return new Promise((resolve) => setTimeout(resolve, 0))
-  }
-
-  private constructor() {
-    this.registerContent = new Map<keyof typeof VimRegisters, RegisterContent>()
-    this.getClipboardContent()
-      .then((content) => {
-        if (content !== null)
-          this.registerContent.set(VimRegisters.DEFAULT, { content: content.content, type: CopyTypes.TEXT })
-      })
-      .catch((error) => {
-        throw new Error(error)
-      })
-  }
-
-  // Gets an instance of the Register class
-  public static get Instance() {
-    return this._instance || (this._instance = new this())
-  }
-
-  // Gets the current register
-  public get register() {
-    return this.registerContent
   }
 }
