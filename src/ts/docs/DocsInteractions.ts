@@ -4,7 +4,7 @@ import { type Color } from '../types/docTypes'
 import { ClipboardContent, CopyTypes, type KeyboardOpts, VimMode, VimRegisters } from '../types/vimTypes'
 
 /**
- * This class is used to interact with the google docs page
+ * This class is used to interact with the Google Docs page
  */
 export default class DocsInteractions {
   constructor() {
@@ -65,7 +65,7 @@ export default class DocsInteractions {
   }
 
   /**
-   * Returns the font size of the google doc
+   * Returns the font size of the Google doc
    */
   public static getFontSize(): number {
     return parseInt(
@@ -104,7 +104,7 @@ export default class DocsInteractions {
   }
 
   /**
-   * Pastes text into the google docs text target
+   * Pastes text into the Google Docs text target
    * @param text the selector to press
    */
   public static pasteText({ text }: { text: string }): typeof DocsInteractions {
@@ -221,8 +221,6 @@ export default class DocsInteractions {
     })
 
     VIM.Vim.mode = VimMode.NORMAL
-
-    return new Promise((resolve: (value: null) => void) => setTimeout(() => resolve(null), 0))
   }
 
   /**
@@ -246,7 +244,7 @@ export default class DocsInteractions {
 
   /**
    * Clears the document of all text
-   * @param mac if the user is on a mac
+   * @param mac if the user is on a Mac
    */
   public static clearDocument({ mac }: { mac?: boolean }): void {
     mac ??= VIM.isMac
@@ -273,7 +271,7 @@ export default class DocsInteractions {
 
   /**
    * Deletes Lines relative to the cursor
-   * @param mac if the user is on a mac
+   * @param mac if the user is on a Mac
    * @param repeat how many lines to delete
    * @param direction the direction to delete in
    * @param endsOnEmptyLine if the cursor should end on an empty line

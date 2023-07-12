@@ -80,6 +80,7 @@ function colorTest(Queue: CommandQueue) {
     params: { text: 'Back to black\n\n' },
   })
 }
+
 // Tests jumping to a character
 function copyTest(Queue: CommandQueue) {
   Queue.add({ func: DocsInteractions.toggleBold, params: [], delay: 5 })
@@ -177,30 +178,23 @@ function pasteTest(Queue: CommandQueue) {
     params: {},
   })
 
-  DocsInteractions.copyCurrentLine({ fullLine: true }).then(() => {
-    Queue.add({
-      func: DocsInteractions.pressKey,
-      params: { key: 'End' },
-    })
-    Queue.add({
-      func: DocsInteractions.pasteText,
-      params: { text: 'Pasting from register\n\n' },
-    })
-
-    Queue.add({
-      func: DocsInteractions.pasteFromRegister,
-      params: { register: VimRegisters.DEFAULT },
-    })
+  Queue.add({
+    func: DocsInteractions.copyCurrentLine,
+    params: { fullLine: true },
   })
-  // setTimeout(() => {
-  //   console.log('Text Cooler', VIM.Register.register.get(VimRegisters.DEFAULT))
-  //   // eslint-disable-next-line no-magic-numbers
-  // }, 2000)
+  Queue.add({
+    func: DocsInteractions.pressKey,
+    params: { key: 'End' },
+  })
+  Queue.add({
+    func: DocsInteractions.pasteText,
+    params: { text: 'Pasting from register\n\n' },
+  })
 
-  // Queue.add({
-  //   func: DocsInteractions.pasteFromRegister,
-  //   params: { register: VimRegisters.DEFAULT },
-  // })
+  Queue.add({
+    func: DocsInteractions.pasteFromRegister,
+    params: { register: VimRegisters.DEFAULT },
+  })
 }
 
 // Test Function

@@ -84,7 +84,7 @@ export default class CommandQueue {
     }
 
     // Run the command
-    // Check if the comands params includes repeat and that the value is not bigger than VIM.VARIABLES.EXCESSIVE_REPEAT, if it is, set it to 0
+    // Check if the commands params includes repeat and that the value is not bigger than VIM.VARIABLES.EXCESSIVE_REPEAT, if it is, set it to 0
     if (
       typeof nextCommand.params.repeat !== 'undefined' &&
       nextCommand.params.repeat > VIM.VARIABLES.EXCESSIVE_REPEAT

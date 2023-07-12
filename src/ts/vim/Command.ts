@@ -21,13 +21,6 @@ export default class Command {
     this._command = command.slice(1)
   }
 
-  public static get status() {
-    if (Command._hasError) {
-      return 'Not an editor command'
-    }
-    return ''
-  }
-
   public static createError(error: string): ErrorString {
     return `Not an editor command: ${error.substring(1)}` as ErrorString
   }
@@ -37,18 +30,7 @@ export default class Command {
     Statusline.showMessage(info)
   }
 
-  public static showError(error: string) {
-    Statusline.showError(Command.createError(error))
-  }
-
   private static triggerError(command: string) {
-    // const COMMAND_HIDE_DELAY = 1000
-    // Command._hasError = true
-    // VIM.Statusline.update()
-    // setTimeout(() => {
-    //   Command._hasError = false
-    //   VIM.Statusline.update()
-    // }, COMMAND_HIDE_DELAY)
     Statusline.showError(Command.createError(command))
   }
 
