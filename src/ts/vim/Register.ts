@@ -41,11 +41,9 @@ export default class Register {
   /**
    * Gets the users clipboard content
    * Tries 10 times, every 250ms.
-   * If Document isn't focused it will try again.
+   * If the Document isn't focused, it will try again.
    */
   public async getClipboardContent({ fullLine = false }: { fullLine?: boolean } = {}) {
-    console.log('Getting clipboard content', { fullLine })
-
     const maxRetries = 10
     const delay = 250
 
@@ -59,7 +57,6 @@ export default class Register {
         await new Promise((resolve) => setTimeout(resolve, 50))
 
         content = ((await navigator.clipboard.readText()) ?? '') as ClipboardContent
-        console.log('THIS IS CONTENT', content)
 
         if (fullLine) {
           const selection = (`\n${content}` ?? '') as ClipboardContent
@@ -75,7 +72,6 @@ export default class Register {
           this.registerContent.set(VimRegisters.DEFAULT, { content: content ?? '', type: CopyTypes.TEXT })
         }
 
-        console.log('RETURNING CONTENT', newContent)
         return newContent
       } catch (error) {
         console.error("Document isn't focused, trying again", error)

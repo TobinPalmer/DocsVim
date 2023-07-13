@@ -97,6 +97,15 @@ export default class CommandQueue {
     ) {
       nextCommand.params.repeat = 1
     }
+    console.log(
+      'Calling',
+      nextCommand.func.name,
+      'with',
+      nextCommand.params,
+      'repeat:',
+      nextCommand.params.repeat ?? 'NOT ASSIGNED (1)',
+    )
+
     nextCommand.func(nextCommand.params)
 
     // Set a new delay timer that will run the next command when finished

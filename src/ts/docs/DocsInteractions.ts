@@ -81,7 +81,6 @@ export default class DocsInteractions {
   public static correctCursorSize() {
     const DELAY = 0
     setTimeout(() => {
-      console.log('Correcting cursor size')
       const currentFontSize = this.getFontSize()
       this.setCursorWidth({ width: currentFontSize / 2 })
     }, DELAY)
@@ -106,21 +105,21 @@ export default class DocsInteractions {
   /**
    * Pastes text into the Google Docs text target
    * @param text the selector to press
+   * @param repeat the number of times to paste
    */
-  public static pasteText({ text }: { text: string }): typeof DocsInteractions {
+  public static pasteText({ text, repeat = 1 }: { text: string; repeat?: number }): typeof DocsInteractions {
     const element = (
       (document.getElementsByClassName('docs-texteventtarget-iframe')[0] as HTMLIFrameElement)
         .contentDocument as Document
     ).querySelector('[contenteditable=true]') as HTMLElement
 
     const data = new DataTransfer()
-    data.setData('text/plain', text)
+    data.setData('text/plain', text.repeat(repeat))
 
     const paste = new ClipboardEvent('paste', { clipboardData: data })
-    if (paste.clipboardData !== null) paste.clipboardData.setData('text/plain', text)
+    if (paste.clipboardData !== null) paste.clipboardData.setData('text/plain', text.repeat(repeat))
 
     element.dispatchEvent(paste)
-
     return this
   }
 
@@ -138,7 +137,13 @@ export default class DocsInteractions {
   /**
    * Pastes the current text in a buffer
    */
-  public static pasteFromRegister({ register: buffer }: { register: keyof typeof VimRegisters }) {
+  public static pasteFromRegister({
+    register: buffer,
+    repeat = 1,
+  }: {
+    register: keyof typeof VimRegisters
+    repeat?: number
+  }) {
     const text = VIM.Register.register.get(buffer)
 
     if (text === null) return
@@ -149,9 +154,10 @@ export default class DocsInteractions {
         params: { key: 'End' },
       })
     }
+    console.log('PASTING ', repeat)
     VIM.CommandQueue.add({
       func: DocsInteractions.pasteText,
-      params: { text: text?.content ?? '' },
+      params: { text: text?.content ?? '', repeat },
     })
   }
 
@@ -584,7 +590,6 @@ export default class DocsInteractions {
   }) {
     const element = document.querySelector(selector)
     if (!element) return
-    console.log('Pressing', element)
 
     const opts = { bubbles: true }
 

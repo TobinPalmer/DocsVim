@@ -3,10 +3,10 @@ import { SpecialRegisters, SpecialRegistersValueTypes } from '../types/vimTypes'
 export default class VimBuffer {
   // eslint-disable-next-line no-use-before-define
   private static _instance: VimBuffer
-  private readonly bufferMap: Map<SpecialRegisters, string | number>
+  private readonly bufferMap: Map<SpecialRegisters, SpecialRegistersValueTypes[keyof SpecialRegistersValueTypes]>
 
   private constructor() {
-    this.bufferMap = new Map<SpecialRegisters, string | number>()
+    this.bufferMap = new Map<SpecialRegisters, SpecialRegistersValueTypes[keyof SpecialRegistersValueTypes]>()
   }
 
   public static get Instance() {

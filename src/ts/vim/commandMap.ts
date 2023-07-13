@@ -263,14 +263,10 @@ export const COMMAND_MAP = Object.freeze({
         },
       })
     },
-    p() {
-      // VIM.CommandQueue.add({
-      //   func: DocsInteractions.pressKey,
-      //   params: { key: 'End' },
-      // })
+    p(opts: KeyboardCommand = {}) {
       return VIM.CommandQueue.add({
         func: DocsInteractions.pasteFromRegister,
-        params: { register: VimRegisters.DEFAULT },
+        params: { register: VimRegisters.DEFAULT, repeat: opts.repeat },
       })
     },
     c: {

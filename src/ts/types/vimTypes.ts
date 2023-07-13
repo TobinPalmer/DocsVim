@@ -53,7 +53,7 @@ export enum SpecialRegisters {
   'LAST_MACRO' = '@',
 }
 
-export type SpecialRegistersValueTypes = {
+export interface SpecialRegistersValueTypes {
   DEFAULT: string
   LAST_COMMAND: { command: string; args: string[] }
   LAST_EDIT: number
