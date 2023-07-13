@@ -170,13 +170,50 @@ export const COMMAND_MAP = Object.freeze({
       }
       return false
     },
-    g: {
-      g() {
-        VIM.CommandQueue.add({
-          func: DocsInteractions.pressKey,
-          params: { key: 'Home', opts: { ctrlKey: true } },
-        })
-      },
+    g(opts: KeyboardCommand = {}) {
+      if (opts.shiftKey) {
+        if (opts.mac) {
+          VIM.CommandQueue.add({
+            func: DocsInteractions.pressKey,
+            params: { key: 'ArrowDown', opts: { ctrlKey: true } },
+          })
+        } else {
+          VIM.CommandQueue.add({
+            func: DocsInteractions.pressKey,
+            params: { key: 'End', opts: { ctrlKey: true } },
+          })
+        }
+      }
+      // Keys that we have motions for, ex gg, gk, gj
+      const gKeys = ['g', 'j', 'k']
+      if (opts.afterKeys && gKeys.includes(opts.afterKeys[0].key)) {
+        if (opts.afterKeys[0].key === 'g') {
+          if (opts.mac) {
+            VIM.CommandQueue.add({
+              func: DocsInteractions.pressKey,
+              params: { key: 'ArrowUp', opts: { ctrlKey: true } },
+            })
+          } else {
+            VIM.CommandQueue.add({
+              func: DocsInteractions.pressKey,
+              params: { key: 'Home', opts: { ctrlKey: true } },
+            })
+          }
+        }
+        if (opts.afterKeys[0].key === 'j') {
+          VIM.CommandQueue.add({
+            func: DocsInteractions.pressKey,
+            params: { key: 'ArrowDown', repeat: opts.repeat },
+          })
+        }
+        if (opts.afterKeys[0].key === 'k') {
+          VIM.CommandQueue.add({
+            func: DocsInteractions.pressKey,
+            params: { key: 'ArrowUp', repeat: opts.repeat },
+          })
+        }
+      }
+      return { code: VimBreakCodes.g, required: 1 }
     },
     i(opts: KeyboardCommand = {}) {
       if (opts.shiftKey) {

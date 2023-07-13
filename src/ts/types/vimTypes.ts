@@ -18,6 +18,7 @@ export enum VimRegisters {
 export enum VimBreakCodes {
   'find' = 'FIND',
   'wrap' = 'WRAP',
+  'g' = 'g',
 }
 
 export type ClipboardContent = string & { __brand: 'clipboardContent' }
