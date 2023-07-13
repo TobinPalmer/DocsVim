@@ -535,10 +535,18 @@ export const COMMAND_MAP = Object.freeze({
           w(opts: KeyboardCommand = {}) {
             if (opts.afterKeys) {
               // Key isn't a modifier key.
-              if (!['Escape', 'Meta', 'Alt', 'Control'].includes(opts.afterKeys[0].key)) {
+              if (
+                !['Escape', 'Meta', 'Alt', 'Control', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(
+                  opts.afterKeys[0].key,
+                )
+              ) {
                 VIM.CommandQueue.add({
                   func: DocsInteractions.pressKey,
                   params: { key: 'ArrowRight', opts: { altKey: true } },
+                })
+                VIM.CommandQueue.add({
+                  func: DocsInteractions.pressKey,
+                  params: { key: 'ArrowLeft', opts: { altKey: true } },
                 })
 
                 VIM.CommandQueue.add({
@@ -548,7 +556,7 @@ export const COMMAND_MAP = Object.freeze({
 
                 VIM.CommandQueue.add({
                   func: DocsInteractions.pressKey,
-                  params: { key: 'ArrowLeft', opts: { altKey: true } },
+                  params: { key: 'ArrowRight', opts: { altKey: true } },
                 })
 
                 VIM.CommandQueue.add({
