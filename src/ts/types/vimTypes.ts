@@ -41,3 +41,24 @@ export interface RegisterContent {
   type: CopyTypes
   content: ClipboardContent | null
 }
+
+// eslint-disable-next-line no-shadow
+export enum SpecialRegisters {
+  'DEFAULT' = '"',
+  'LAST_INSERT' = '.',
+  'LAST_EDIT' = '^',
+  'LAST_YANK' = '*',
+  'LAST_SEARCH' = '/',
+  'LAST_COMMAND' = ':',
+  'LAST_MACRO' = '@',
+}
+
+export type SpecialRegistersValueTypes = {
+  DEFAULT: string
+  LAST_COMMAND: { command: string; args: string[] }
+  LAST_EDIT: number
+  LAST_INSERT: number
+  LAST_MACRO: string
+  LAST_SEARCH: number
+  LAST_YANK: string
+}

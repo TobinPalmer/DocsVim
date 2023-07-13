@@ -2,6 +2,7 @@
 
 import { VIM } from '../main'
 import DocsInteractions from '../docs/DocsInteractions'
+import { SpecialRegisters } from '../types/vimTypes'
 
 /**
  * The interface for the parameters of a command
@@ -82,6 +83,11 @@ export default class CommandQueue {
     if (nextCommand.func === DocsInteractions.pressKey) {
       DocsInteractions.correctCursorSize()
     }
+
+    VIM.VimBuffer.addToBuffer({
+      buffer: SpecialRegisters.LAST_COMMAND,
+      value: { command: nextCommand.func.name, args: nextCommand.params },
+    })
 
     // Run the command
     // Check if the commands params includes repeat and that the value is not bigger than VIM.VARIABLES.EXCESSIVE_REPEAT, if it is, set it to 0

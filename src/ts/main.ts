@@ -10,7 +10,7 @@ export const VIM = {
   isMac: navigator.userAgent.includes('MAC') || navigator.platform.toUpperCase().includes('MAC'),
   Vim: new Vim(),
   interactions: new DocsInteractions(),
-  VimBuffer: new VimBuffer(),
+  VimBuffer: VimBuffer.Instance,
   CommandQueue: new CommandQueue(),
   Motion: new Motion(),
   Register: Register.Instance,
