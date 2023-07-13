@@ -10,13 +10,39 @@ export const COMMAND_MAP = Object.freeze({
       VIM.Vim.mode = VimMode.NORMAL
     },
   },
-  VISUAL_LINE: {},
+  VISUAL_LINE: {
+    escape() {
+      VIM.Vim.mode = VimMode.NORMAL
+      DocsInteractions.stopSelecting()
+    },
+    j() {
+      VIM.CommandQueue.add({
+        func: DocsInteractions.pressKey,
+        params: { key: 'ArrowDown', opts: { shiftKey: true } },
+      })
+      VIM.CommandQueue.add({
+        func: DocsInteractions.pressKey,
+        params: { key: 'End', opts: { shiftKey: true } },
+      })
+    },
+    k() {
+      VIM.CommandQueue.add({
+        func: DocsInteractions.pressKey,
+        params: { key: 'ArrowUp', opts: { shiftKey: true } },
+      })
+      VIM.CommandQueue.add({
+        func: DocsInteractions.pressKey,
+        params: { key: 'End', opts: { shiftKey: true } },
+      })
+    },
+  },
   VISUAL: {
     r(opts: KeyboardCommand = {}) {
       if (opts.metaKey) location.reload()
     },
     escape() {
       VIM.Vim.mode = VimMode.NORMAL
+      DocsInteractions.stopSelecting()
     },
     b() {
       return VIM.CommandQueue.add({
@@ -510,8 +536,18 @@ export const COMMAND_MAP = Object.freeze({
         },
       },
     },
-    v: () => {
-      VIM.Vim.mode = VimMode.VISUAL
+    v(opts: KeyboardCommand = {}) {
+      if (opts.shiftKey) {
+        VIM.CommandQueue.add({
+          func: DocsInteractions.pressKey,
+          params: { key: 'Home' },
+        })
+        VIM.CommandQueue.add({
+          func: DocsInteractions.pressKey,
+          params: { key: 'End', opts: { shiftKey: true } },
+        })
+        VIM.Vim.mode = VimMode.VISUAL_LINE
+      } else VIM.Vim.mode = VimMode.VISUAL
     },
     s: {
       i: {
