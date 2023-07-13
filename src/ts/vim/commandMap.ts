@@ -570,6 +570,37 @@ export const COMMAND_MAP = Object.freeze({
             return { code: VimBreakCodes.wrap, required: 1 }
           },
         },
+        s(opts: KeyboardCommand = {}) {
+          if (opts.afterKeys) {
+            // Key isn't a modifier key.
+            if (
+              !['Escape', 'Meta', 'Alt', 'Control', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(
+                opts.afterKeys[0].key,
+              )
+            ) {
+              VIM.CommandQueue.add({
+                func: DocsInteractions.pressKey,
+                params: { key: 'Home' },
+              })
+
+              VIM.CommandQueue.add({
+                func: DocsInteractions.pasteText,
+                params: { text: opts.afterKeys[0].key },
+              })
+
+              VIM.CommandQueue.add({
+                func: DocsInteractions.pressKey,
+                params: { key: 'End' },
+              })
+
+              VIM.CommandQueue.add({
+                func: DocsInteractions.pasteText,
+                params: { text: opts.afterKeys[0].key },
+              })
+            }
+          }
+          return { code: VimBreakCodes.wrap, required: 1 }
+        },
       },
       y() {
         // eslint-disable-next-line @typescript-eslint/no-empty-function
