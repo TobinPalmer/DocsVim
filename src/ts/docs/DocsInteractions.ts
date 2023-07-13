@@ -407,12 +407,12 @@ export default class DocsInteractions {
     } as const
 
     const event = new KeyboardEvent('keydown', {
-      keyCode: keyMapper[key as keyof typeof keyMapper],
+      keyCode: keyMapper[key as keyof typeof keyMapper] || null,
       key: FormatKey.format(key, opts.mac),
       ctrlKey: opts.ctrlKey && !opts.mac,
       shiftKey: opts.shiftKey,
       altKey: opts.altKey,
-      metaKey: VIM.isMac && opts.ctrlKey,
+      metaKey: VIM.isMac && (opts.ctrlKey || false),
     })
 
     for (let i = 0; i < repeat; i++) element.dispatchEvent(event)

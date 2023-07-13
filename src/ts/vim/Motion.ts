@@ -92,7 +92,7 @@ export default class Motion {
     for (const currentKey of this._currentKeys) {
       // If the currentObject[key] is a function, call it with the opts
       if (isFunction(currentObject[currentKey.key.toLowerCase()])) {
-        const repeat = parseInt(this._repeat, 10)
+        const repeat = parseInt(this._repeat, 10) || 1
 
         const func = (
           currentObject[currentKey.key.toLowerCase()] as unknown as (

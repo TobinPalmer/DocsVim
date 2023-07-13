@@ -17,6 +17,7 @@ export enum VimRegisters {
 // eslint-disable-next-line no-shadow
 export enum VimBreakCodes {
   'find' = 'FIND',
+  'wrap' = 'WRAP',
 }
 
 export type ClipboardContent = string & { __brand: 'clipboardContent' }

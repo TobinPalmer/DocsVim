@@ -481,6 +481,26 @@ export const COMMAND_MAP = Object.freeze({
     v: () => {
       VIM.Vim.mode = VimMode.VISUAL
     },
+    s: {
+      i: {
+        w(opts: KeyboardCommand = {}) {
+          if (opts.afterKeys) {
+            VIM.CommandQueue.add({
+              func: DocsInteractions.pressKey,
+              params: { key: 'ArrowLeft', opts: { altKey: true } },
+            })
+
+            if (!(opts.afterKeys[0].key in ['Escape'])) {
+              VIM.CommandQueue.add({
+                func: DocsInteractions.pasteText,
+                params: { text: opts.afterKeys[0].key },
+              })
+            }
+          }
+          return { code: VimBreakCodes.wrap, required: 1 }
+        },
+      },
+    },
     u() {
       return VIM.CommandQueue.add({
         func: DocsInteractions.undo,
@@ -510,6 +530,36 @@ export const COMMAND_MAP = Object.freeze({
       })
     },
     y: {
+      s: {
+        i: {
+          w(opts: KeyboardCommand = {}) {
+            if (opts.afterKeys) {
+              if (!['Escape'].includes(opts.afterKeys[0].key)) {
+                VIM.CommandQueue.add({
+                  func: DocsInteractions.pressKey,
+                  params: { key: 'ArrowRight', opts: { altKey: true } },
+                })
+
+                VIM.CommandQueue.add({
+                  func: DocsInteractions.pasteText,
+                  params: { text: opts.afterKeys[0].key },
+                })
+
+                VIM.CommandQueue.add({
+                  func: DocsInteractions.pressKey,
+                  params: { key: 'ArrowLeft', opts: { altKey: true } },
+                })
+
+                VIM.CommandQueue.add({
+                  func: DocsInteractions.pasteText,
+                  params: { text: opts.afterKeys[0].key },
+                })
+              }
+            }
+            return { code: VimBreakCodes.wrap, required: 1 }
+          },
+        },
+      },
       y() {
         // eslint-disable-next-line @typescript-eslint/no-empty-function
         DocsInteractions.copyCurrentLine({ fullLine: true })
