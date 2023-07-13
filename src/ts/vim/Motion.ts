@@ -167,7 +167,7 @@ export default class Motion {
     if (typeof func === 'undefined') return false
     if (this.map[func.code] === true) return true
 
-    // Checks if the functions return type contains { code: string, required: number}
+    // Checks if the functions' return type contains { code: string, required: number}
     const codeInFunc = (testFunction: any): testFunction is VimBreakCodesReturnType => {
       if (typeof testFunction === 'undefined' || testFunction === null) return false
       if (
@@ -182,11 +182,6 @@ export default class Motion {
       return false
     }
 
-    if (codeInFunc(func) && Object.values(VimBreakCodes).includes(func.code)) {
-      console.log('calling')
-      return true
-    }
-
-    return false
+    return codeInFunc(func) && Object.values(VimBreakCodes).includes(func.code)
   }
 }

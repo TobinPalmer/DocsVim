@@ -26,7 +26,6 @@ export default class Command {
   }
 
   public static showInfo(info: string) {
-    console.log('Showing Info', info)
     Statusline.showMessage(info)
   }
 

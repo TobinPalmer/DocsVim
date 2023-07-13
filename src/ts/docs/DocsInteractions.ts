@@ -154,7 +154,6 @@ export default class DocsInteractions {
         params: { key: 'End' },
       })
     }
-    console.log('PASTING ', repeat)
     VIM.CommandQueue.add({
       func: DocsInteractions.pasteText,
       params: { text: text?.content ?? '', repeat },
@@ -457,7 +456,6 @@ export default class DocsInteractions {
     })
 
     function analyseText(text: string) {
-      console.log('analysing', text)
       const ERROR_INDEX = -1
       const arr = text.split('')
       let index = ERROR_INDEX
@@ -492,7 +490,6 @@ export default class DocsInteractions {
           params: { key: 'ArrowLeft', repeat: analyse.index },
         })
       }
-      console.log('INDEX TO LETTER', analyseText(regContent).index)
     }, CLIPBOARD_COPY_DELAY)
   }
 
