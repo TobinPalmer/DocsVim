@@ -483,21 +483,23 @@ export const COMMAND_MAP = Object.freeze({
     },
     s: {
       i: {
-        w(opts: KeyboardCommand = {}) {
-          if (opts.afterKeys) {
-            VIM.CommandQueue.add({
-              func: DocsInteractions.pressKey,
-              params: { key: 'ArrowLeft', opts: { altKey: true } },
-            })
-
-            if (!(opts.afterKeys[0].key in ['Escape'])) {
-              VIM.CommandQueue.add({
-                func: DocsInteractions.pasteText,
-                params: { text: opts.afterKeys[0].key },
-              })
-            }
-          }
-          return { code: VimBreakCodes.wrap, required: 1 }
+        w() {
+          VIM.CommandQueue.add({
+            func: DocsInteractions.pressKey,
+            params: { key: 'ArrowRight', opts: { altKey: true } },
+          })
+          VIM.CommandQueue.add({
+            func: DocsInteractions.pressKey,
+            params: { key: 'ArrowLeft', opts: { shiftKey: true, altKey: true } },
+          })
+          VIM.CommandQueue.add({
+            func: DocsInteractions.pasteText,
+            params: { text: ' ' },
+          })
+          VIM.CommandQueue.add({
+            func: DocsInteractions.pasteFromRegister,
+            params: { register: VimRegisters.DEFAULT },
+          })
         },
       },
     },
