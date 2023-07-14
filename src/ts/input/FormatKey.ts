@@ -69,6 +69,7 @@ const keysList = {
   Escape: 'Escape',
   Tab: 'Tab',
   Shift: 'Shift',
+  '.': 'dot',
   ':': ':',
 } as const
 

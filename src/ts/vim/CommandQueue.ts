@@ -2,7 +2,6 @@
 
 import { VIM } from '../main'
 import DocsInteractions from '../docs/DocsInteractions'
-import { SpecialRegisters } from '../types/vimTypes'
 
 /**
  * The interface for the parameters of a command
@@ -84,9 +83,11 @@ export default class CommandQueue {
       DocsInteractions.correctCursorSize()
     }
 
+    // console.log('Run', nextCommand.params)
+
     VIM.VimBuffer.addToBuffer({
-      buffer: SpecialRegisters.LAST_COMMAND,
-      value: { command: nextCommand.func.name, args: nextCommand.params },
+      buffer: 'LAST_COMMAND',
+      value: { func: nextCommand.func, params: nextCommand.params, repeat: nextCommand.params.repeat ?? 1 },
     })
 
     // Run the command

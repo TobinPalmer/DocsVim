@@ -1,6 +1,7 @@
 import DocsInteractions from '../docs/DocsInteractions'
 import { VIM } from '../main'
 import { type KeyboardOpts, VimMode } from '../types/vimTypes'
+import { Keys } from '../input/FormatKey'
 
 /**
  * Vim class that handles different vim modes and input
@@ -49,9 +50,11 @@ export default class Vim {
    * @param key the key to convert
    * @returns either the key you passed in or a formatted key
    */
-  private static _keyToString(key: string) {
-    const mapper = {}
-    return mapper[key as keyof typeof mapper] || key
+  private static _keyToString(key: string): keyof Keys {
+    const mapper = {
+      '.': 'dot',
+    }
+    return (mapper[key as keyof typeof mapper] || key) as keyof Keys
   }
 
   /**

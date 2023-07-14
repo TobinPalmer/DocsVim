@@ -92,6 +92,7 @@ export default class Motion {
     for (const currentKey of this._currentKeys) {
       // If the currentObject[key] is a function, call it with the opts
       if (isFunction(currentObject[currentKey.key.toLowerCase()])) {
+        const keyString = this._currentKeys.map((key) => key.key).join('')
         const repeat = parseInt(this._repeat, 10) || 1
 
         const func = (
@@ -99,6 +100,18 @@ export default class Motion {
             options: KeyboardOpts & { repeat?: number },
           ) => (...args: any[]) => void
         )({ ...opts, repeat })
+
+        if (keyString !== 'dot') {
+          VIM.VimBuffer.addToBuffer({
+            buffer: 'LAST_COMMAND_KEYS',
+            value: { key: keyString, opts },
+          })
+        }
+
+        // VIM.VimBuffer.addToBuffer({
+        //   buffer: SpecialRegisters.LAST_COMMAND_KEYS,
+        //   value: { key: nextCommand.params[0], opts: nextCommand.params[1] },
+        // })
 
         // Clicked a key that requires keys after, ex f requires a target like fa to jump to a
         if (this._functionReturnsBreakCode(func) && this._needsAfterKeys.status === true) {

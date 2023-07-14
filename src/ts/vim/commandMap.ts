@@ -1,6 +1,13 @@
 import DocsInteractions from '../docs/DocsInteractions'
 import { VIM } from '../main'
-import { type KeyboardOpts, VimBreakCodes, VimMode, VimRegisters } from '../types/vimTypes'
+import {
+  type KeyboardOpts,
+  LAST_COMMAND_KEYS,
+  SpecialRegisters,
+  VimBreakCodes,
+  VimMode,
+  VimRegisters,
+} from '../types/vimTypes'
 
 type KeyboardCommand = KeyboardOpts & { repeat?: number }
 
@@ -116,6 +123,27 @@ export const COMMAND_MAP = Object.freeze({
     },
   },
   NORMAL: {
+    dot(opts: KeyboardCommand = {}) {
+      const command = VIM.VimBuffer.buffer.get('LAST_COMMAND_KEYS' as SpecialRegisters) as LAST_COMMAND_KEYS
+      const keys = command.key.split('')
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let commandFn: Record<string, any> = COMMAND_MAP.NORMAL
+      for (let i = 0; i < keys.length; i++) {
+        commandFn = commandFn[keys[i] as keyof typeof commandFn]
+      }
+
+      const isFunction = (x: unknown): x is (options: KeyboardOpts) => void => typeof x === 'function'
+
+      console.log(command.opts)
+
+      if (isFunction(commandFn)) {
+        for (let i = 0; i < (opts.repeat ?? 1); i++) {
+          commandFn(command.opts ?? {})
+        }
+      }
+    },
+
     o(opts: KeyboardCommand = {}) {
       if (opts.shiftKey) {
         VIM.CommandQueue.add({

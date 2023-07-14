@@ -51,15 +51,30 @@ export enum SpecialRegisters {
   'LAST_YANK' = '*',
   'LAST_SEARCH' = '/',
   'LAST_COMMAND' = ':',
+  'LAST_COMMAND_KEYS' = 'test_string',
   'LAST_MACRO' = '@',
 }
 
-export interface SpecialRegistersValueTypes {
-  DEFAULT: string
-  LAST_COMMAND: { command: string; args: string[] }
-  LAST_EDIT: number
-  LAST_INSERT: number
-  LAST_MACRO: string
-  LAST_SEARCH: number
-  LAST_YANK: string
+export type LAST_COMMAND = {
+  repeat: number
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  func: (...args: any[]) => void
+  params: string[]
 }
+
+export type LAST_COMMAND_KEYS = { key: string; opts: KeyboardOpts }
+
+interface TypeMapping {
+  LAST_COMMAND_KEYS: LAST_COMMAND_KEYS
+  LAST_COMMAND: LAST_COMMAND
+  string: string
+  number: number
+}
+
+// export type SpecialRegistersValueTypes<T extends keyof typeof SpecialRegisters> = {
+//   [Key in T]: Key extends keyof TypeMapping ? TypeMapping[Key] : never
+// }
+
+export type SpecialRegistersValueTypes<K extends keyof typeof SpecialRegisters> = K extends keyof TypeMapping
+  ? TypeMapping[K]
+  : never
