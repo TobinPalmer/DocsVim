@@ -27,58 +27,6 @@ export default class Macro {
     VIM.VimBuffer.setMacroMap({ key, opts, register })
   }
 
-  // public static runMacro({ keys, repeat = 1 }: { keys: LAST_COMMAND_KEYS[]; repeat?: number }) {
-  //   const isFunction = (x: unknown): x is (options: KeyboardOpts) => void => typeof x === 'function'
-  //
-  //   const replayMacro = (number: number, idx = 0) => {
-  //     const REPEAT_DELAY = 10
-  //     const REPEAT_LIMIT = 150
-  //
-  //     if (number === 0 || number > REPEAT_LIMIT) {
-  //       VIM.Macro.status.playbackStatus = PlaybackStatus.STOPPED
-  //       return
-  //     }
-  //
-  //     console.table(keys)
-  //
-  //     if (idx >= keys.length) {
-  //       replayMacro(number - 1)
-  //     } else {
-  //       const { key, opts } = keys[idx]
-  //       if (isFunction(key)) {
-  //         key(opts)
-  //       } else {
-  //         VIM.Vim.keydown(key, opts)
-  //       }
-  //
-  //       setTimeout(() => replayMacro(number, idx + 1), REPEAT_DELAY)
-  //     }
-  //   }
-  //
-  //   replayMacro(repeat + 1)
-  // }
-
-  // public static runMacro({ keys, repeat = 1 }: { keys: LAST_COMMAND_KEYS[]; repeat?: number }) {
-  //   const isFunction = (x: unknown): x is (options: KeyboardOpts) => void => typeof x === 'function'
-  //
-  //   for (let i = 0; i < (repeat ?? 1); i++) {
-  //     let count = 0
-  //     setInterval(() => {
-  //       if (count === keys.length) {
-  //         VIM.Macro.status.playbackStatus = PlaybackStatus.STOPPED
-  //         return
-  //       }
-  //       const { key, opts } = keys[count]
-  //       if (isFunction(key)) {
-  //         key(opts)
-  //       } else {
-  //         VIM.Vim.keydown(key, opts)
-  //       }
-  //       count++
-  //     })
-  //   }
-  // }
-
   public static runMacro({ keys, repeat = 1 }: { keys: LAST_COMMAND_KEYS[]; repeat?: number }) {
     const isFunction = (x: unknown): x is (options: KeyboardOpts) => void => typeof x === 'function'
 
@@ -88,6 +36,7 @@ export default class Macro {
     let count = 0
     const intervalId = setInterval(() => {
       const { key, opts } = keys[count]
+      if (!key) return
       if (isFunction(key)) {
         key(opts)
       } else {

@@ -10,6 +10,7 @@ import {
   VimRegisters,
 } from '../types/vimTypes'
 import Macro from './Macro'
+import Statusline from './Statusline'
 
 type KeyboardCommand = KeyboardOpts & { repeat?: number }
 
@@ -150,11 +151,15 @@ export const COMMAND_MAP = Object.freeze({
       }
 
       if (VIM.Macro.status.playbackStatus === PlaybackStatus.RECORDING) {
+        Statusline.showMessage('')
+        VIM.Statusline.update()
         VIM.Macro.status = { playbackStatus: PlaybackStatus.STOPPED, register: '' }
       }
 
       if (opts.afterKeys && VIM.Macro.status.playbackStatus === PlaybackStatus.STOPPED) {
         const [afterKey] = opts.afterKeys
+        Statusline.showMessage(`Recording: @${afterKey.key}`)
+        VIM.Statusline.update()
         Macro.clearMacro(afterKey.key)
         // Wait to set status so that the key is not recorded
         setTimeout(() => {
