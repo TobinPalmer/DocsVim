@@ -11,7 +11,10 @@
     "plugin:prettier/recommended",
     "prettier"
   ],
-  "plugins": ["@typescript-eslint", "prettier"],
+  "plugins": [
+    "@typescript-eslint",
+    "prettier"
+  ],
   "env": {
     "es2020": true,
     "browser": true,
@@ -35,8 +38,27 @@
     "func-style": "off",
     "id-blacklist": "off",
     "no-underscore-dangle": "off",
+    "no-shadow": "off",
+    "@typescript-eslint/no-shadow": "error",
+    "no-use-before-define": "off",
+    "no-magic-numbers": [
+      "error",
+      {
+        "ignore": [
+          0,
+          1,
+          -1
+        ]
+      }
+    ],
     "@typescript-eslint/no-use-before-define": "error",
-    "filenames/match-regex": [2, "^[.a-zA-Z_]+$", true]
+    "filenames/match-regex": [
+      2,
+      "^[.a-zA-Z_]+$",
+      true
+    ]
   },
-  "ignorePatterns": ["dist /**/*"]
+  "ignorePatterns": [
+    "dist /**/*"
+  ]
 }

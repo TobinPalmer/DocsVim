@@ -6,7 +6,6 @@ import { VIM } from '../main'
  * Register class handles the vim clipboard which is separate from the system clipboard
  */
 export default class Register {
-  // eslint-disable-next-line no-use-before-define
   private static _instance: Register
   private readonly registerContent: Map<keyof typeof VimRegisters, RegisterContent>
 

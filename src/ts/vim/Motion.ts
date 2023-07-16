@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Keys } from '../input/FormatKey'
 import { VIM } from '../main'
-import { type KeyboardOpts, VimBreakCodes, VimMode } from '../types/vimTypes'
+import { type KeyboardOpts, SpecialRegisters, VimBreakCodes, VimMode } from '../types/vimTypes'
 import Command from './Command'
 import { COMMAND_MAP } from './commandMap'
 
@@ -103,7 +103,7 @@ export default class Motion {
 
         if (keyString !== 'dot') {
           VIM.VimBuffer.addToBuffer({
-            buffer: 'LAST_COMMAND_KEYS',
+            buffer: SpecialRegisters.LAST_COMMAND_KEYS,
             value: { key: keyString, opts },
           })
         }

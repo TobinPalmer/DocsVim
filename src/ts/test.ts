@@ -164,8 +164,8 @@ function pasteTest(Queue: CommandQueue) {
     params: { text: 'abcdefghijklmnopqrstuvwxyz\n\n' },
   })
 
-  // eslint-disable-next-line no-magic-numbers
-  const nonce = Math.random().toString(36)
+  const NUMBER_TO_STRING_RADIX = 36
+  const nonce = Math.random().toString(NUMBER_TO_STRING_RADIX)
   console.log(nonce)
 
   Queue.add({

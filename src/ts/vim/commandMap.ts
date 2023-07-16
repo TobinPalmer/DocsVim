@@ -3,11 +3,13 @@ import { VIM } from '../main'
 import {
   type KeyboardOpts,
   LAST_COMMAND_KEYS,
+  PlaybackStatus,
   SpecialRegisters,
   VimBreakCodes,
   VimMode,
   VimRegisters,
 } from '../types/vimTypes'
+import Macro from './Macro'
 
 type KeyboardCommand = KeyboardOpts & { repeat?: number }
 
@@ -135,15 +137,52 @@ export const COMMAND_MAP = Object.freeze({
 
       const isFunction = (x: unknown): x is (options: KeyboardOpts) => void => typeof x === 'function'
 
-      console.log(command.opts)
-
       if (isFunction(commandFn)) {
         for (let i = 0; i < (opts.repeat ?? 1); i++) {
           commandFn(command.opts ?? {})
         }
       }
     },
+    // eslint-disable-next-line consistent-return
+    q(opts: KeyboardCommand = {}) {
+      if (VIM.Macro.status.playbackStatus === PlaybackStatus.STOPPED && !opts.afterKeys) {
+        console.log('Returning')
+        return { code: VimBreakCodes.macro_register, required: 1 }
+      }
 
+      if (VIM.Macro.status.playbackStatus === PlaybackStatus.RECORDING) {
+        VIM.Macro.status = { playbackStatus: PlaybackStatus.STOPPED, register: '' }
+        console.log('Stopping macro')
+        console.log(VIM.VimBuffer.getMacroMap())
+      }
+
+      if (opts.afterKeys && VIM.Macro.status.playbackStatus === PlaybackStatus.STOPPED) {
+        const [afterKey] = opts.afterKeys
+        console.log(`Recording macro @${afterKey.key}`)
+        // Wait to set status so that the key is not recorded
+        Macro.clearMacro(afterKey.key)
+        setTimeout(() => {
+          VIM.Macro.status = { playbackStatus: PlaybackStatus.RECORDING, register: afterKey.key }
+        })
+      }
+    },
+    at(opts: KeyboardCommand = {}) {
+      if (opts.afterKeys) {
+        const [afterKey] = opts.afterKeys
+        const macro = Macro.getMacroText(VIM.VimBuffer.getMacroMap().get(afterKey.key) || [])
+
+        console.log(`Running macro @${afterKey.key}`)
+
+        VIM.Macro.status = { playbackStatus: PlaybackStatus.PLAYING, register: afterKey.key }
+        Macro.runMacro({ keys: macro })
+        return
+      }
+
+      if (!opts.afterKeys) {
+        // eslint-disable-next-line consistent-return
+        return { code: VimBreakCodes.macro, required: 1 }
+      }
+    },
     o(opts: KeyboardCommand = {}) {
       if (opts.shiftKey) {
         VIM.CommandQueue.add({
@@ -288,7 +327,10 @@ export const COMMAND_MAP = Object.freeze({
           params: { key: 'ArrowRight', opts: { ctrlKey: true } },
         })
       }
-      VIM.Vim.mode = VimMode.INSERT
+      setTimeout(() => {
+        VIM.Vim.mode = VimMode.INSERT
+        // eslint-disable-next-line no-magic-numbers
+      }, 15)
     },
     $(opts: KeyboardCommand = {}) {
       VIM.CommandQueue.add({
@@ -360,36 +402,27 @@ export const COMMAND_MAP = Object.freeze({
       })
     },
     c: {
-      c(opts: KeyboardCommand = {}) {
-        if (opts.mac) {
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'ArrowRight', opts: { ctrlKey: true } },
-            delay: 0,
-          })
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'Backspace', opts: { ctrlKey: true } },
-            delay: 0,
-          })
+      c() {
+        VIM.CommandQueue.add({
+          func: DocsInteractions.pressKey,
+          params: { key: 'Home' },
+          delay: 0,
+        })
+        VIM.CommandQueue.add({
+          func: DocsInteractions.pressKey,
+          params: { key: 'End', opts: { shiftKey: true } },
+          delay: 0,
+        })
+        VIM.CommandQueue.add({
+          func: DocsInteractions.pressKey,
+          params: { key: 'Backspace' },
+          delay: 0,
+        })
+
+        const DELAY = 30
+        setTimeout(() => {
           VIM.Vim.mode = VimMode.INSERT
-        } else {
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'Home' },
-            delay: 0,
-          })
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'End', opts: { shiftKey: true } },
-            delay: 0,
-          })
-          VIM.CommandQueue.add({
-            func: DocsInteractions.pressKey,
-            params: { key: 'Delete' },
-          })
-          VIM.Vim.mode = VimMode.INSERT
-        }
+        }, DELAY)
       },
       i: {
         w: () => {

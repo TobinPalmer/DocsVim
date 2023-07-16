@@ -1,16 +1,18 @@
 import DocsInteractions from '../docs/DocsInteractions'
 import { VIM } from '../main'
-import { type KeyboardOpts, VimMode } from '../types/vimTypes'
+import { type KeyboardOpts, PlaybackStatus, VimMode } from '../types/vimTypes'
 import { Keys } from '../input/FormatKey'
+import Macro from './Macro'
 
 /**
  * Vim class that handles different vim modes and input
  */
 export default class Vim {
+  private pasteEscape = false
+
   private _mode: VimMode = VimMode.INSERT
 
   /**
-   if
    * Gets the current mode
    */
   public get mode(): VimMode {
@@ -20,7 +22,6 @@ export default class Vim {
   /**
    * Sets the current mode
    * @param mode the mode to set
-   if
    */
   public set mode(mode: VimMode) {
     setTimeout(() => {
@@ -33,12 +34,17 @@ export default class Vim {
       case VimMode.VISUAL:
       case VimMode.VISUAL_LINE:
         DocsInteractions.setCursorWidth({
+          // eslint-disable-next-line no-magic-numbers
           width: DocsInteractions.getFontSize() / 2,
         })
         break
       case VimMode.INSERT:
         // docsInteractions.setCursorWidth({ width: 1 * docsInteractions.getFontSize() })
-        DocsInteractions.setCursorWidth({ width: 2, isInsertMode: true })
+        console.log('insert mode')
+        DocsInteractions.setCursorWidth({
+          width: 2,
+          isInsertMode: true,
+        })
         break
       default:
         break
@@ -53,6 +59,8 @@ export default class Vim {
   private static _keyToString(key: string): keyof Keys {
     const mapper = {
       '.': 'dot',
+      ',': 'comma',
+      '@': 'at',
     }
     return (mapper[key as keyof typeof mapper] || key) as keyof Keys
   }
@@ -63,11 +71,31 @@ export default class Vim {
    * @param opts the options to pass to the keydown event
    */
   public keydown(key: string, opts: KeyboardOpts = {}): boolean {
-    // opts.mac = opts.mac ?? this._mode === VimMode.insert
+    console.log('KEYDOWN ', key, VIM.Macro.status.playbackStatus)
     opts.mac ??= VIM.isMac
     const result = VIM.Motion.feedkey(Vim._keyToString(key), opts)
 
-    if (this._mode === VimMode.INSERT) return result
+    if (VIM.Macro.status.playbackStatus === PlaybackStatus.RECORDING) {
+      Macro.record(key, opts, VIM.Macro.status.register)
+    }
+
+    if (VIM.Macro.status.playbackStatus === PlaybackStatus.PLAYING) {
+      console.log('KEY', key)
+      if (this.pasteEscape) {
+        console.log('PASTING')
+        DocsInteractions.pasteText({ text: key })
+        this.pasteEscape = false
+      }
+
+      if (key === Macro.PASTE_ESCAPE) {
+        console.log('paste escape', key)
+        this.pasteEscape = true
+      }
+    }
+
+    if (this._mode === VimMode.INSERT) {
+      return result
+    }
 
     return true
   }

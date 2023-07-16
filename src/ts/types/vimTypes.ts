@@ -1,6 +1,5 @@
 import { Keys } from '../input/FormatKey'
 
-// eslint-disable-next-line no-shadow
 export enum VimMode {
   NORMAL = 'NORMAL',
   INSERT = 'INSERT',
@@ -9,16 +8,27 @@ export enum VimMode {
   COMMAND = 'COMMAND',
 }
 
-// eslint-disable-next-line no-shadow
 export enum VimRegisters {
   DEFAULT = 'DEFAULT',
 }
 
-// eslint-disable-next-line no-shadow
 export enum VimBreakCodes {
   'find' = 'FIND',
+  'macro' = 'MACRO',
+  'macro_register' = 'MACRO_REGISTER',
   'wrap' = 'WRAP',
   'g' = 'g',
+}
+
+export enum PlaybackStatus {
+  PLAYING = 'playing',
+  RECORDING = 'recording',
+  STOPPED = 'stopped',
+}
+
+export interface MacroStatus {
+  playbackStatus: PlaybackStatus
+  register: string
 }
 
 export type ClipboardContent = string & { __brand: 'clipboardContent' }
@@ -32,7 +42,6 @@ export type KeyboardOpts = Partial<{
   afterKeys: { key: keyof Keys; opts: KeyboardOpts }[]
 }>
 
-// eslint-disable-next-line no-shadow
 export enum CopyTypes {
   TEXT = 'Text',
   FULL_LINE = 'FullLine',
@@ -43,7 +52,6 @@ export interface RegisterContent {
   content: ClipboardContent | null
 }
 
-// eslint-disable-next-line no-shadow
 export enum SpecialRegisters {
   'DEFAULT' = '"',
   'LAST_INSERT' = '.',
@@ -52,7 +60,7 @@ export enum SpecialRegisters {
   'LAST_SEARCH' = '/',
   'LAST_COMMAND' = ':',
   'LAST_COMMAND_KEYS' = 'test_string',
-  'LAST_MACRO' = '@',
+  'MACRO' = '@',
 }
 
 export type LAST_COMMAND = {
@@ -64,9 +72,16 @@ export type LAST_COMMAND = {
 
 export type LAST_COMMAND_KEYS = { key: string; opts: KeyboardOpts }
 
+export type LAST_MACRO = {
+  register: string
+  keys: LAST_COMMAND_KEYS[]
+}
+
 interface TypeMapping {
-  LAST_COMMAND_KEYS: LAST_COMMAND_KEYS
-  LAST_COMMAND: LAST_COMMAND
+  [SpecialRegisters.LAST_COMMAND_KEYS]: LAST_COMMAND_KEYS
+  [SpecialRegisters.LAST_COMMAND]: LAST_COMMAND
+  [SpecialRegisters.MACRO]: LAST_MACRO[]
+
   string: string
   number: number
 }
@@ -75,6 +90,6 @@ interface TypeMapping {
 //   [Key in T]: Key extends keyof TypeMapping ? TypeMapping[Key] : never
 // }
 
-export type SpecialRegistersValueTypes<K extends keyof typeof SpecialRegisters> = K extends keyof TypeMapping
+export type SpecialRegistersValueTypes<K extends SpecialRegisters> = K extends keyof TypeMapping
   ? TypeMapping[K]
   : never

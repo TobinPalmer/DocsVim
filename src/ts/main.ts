@@ -5,12 +5,14 @@ import Register from './vim/Register'
 import Statusline from './vim/Statusline'
 import Vim from './vim/Vim'
 import VimBuffer from './vim/VimBuffer'
+import Macro from './vim/Macro'
 
 export const VIM = {
   isMac: navigator.userAgent.includes('MAC') || navigator.platform.toUpperCase().includes('MAC'),
   Vim: new Vim(),
   interactions: new DocsInteractions(),
   VimBuffer: VimBuffer.Instance,
+  Macro: Macro.Instance,
   CommandQueue: new CommandQueue(),
   Motion: new Motion(),
   Register: Register.Instance,
