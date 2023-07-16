@@ -40,7 +40,6 @@ export default class Vim {
         break
       case VimMode.INSERT:
         // docsInteractions.setCursorWidth({ width: 1 * docsInteractions.getFontSize() })
-        console.log('insert mode')
         DocsInteractions.setCursorWidth({
           width: 2,
           isInsertMode: true,
@@ -71,7 +70,8 @@ export default class Vim {
    * @param opts the options to pass to the keydown event
    */
   public keydown(key: string, opts: KeyboardOpts = {}): boolean {
-    console.log('KEYDOWN ', key, VIM.Macro.status.playbackStatus)
+    console.log('INVOKING KEYDOWN PASTE ESCAPE STATUS', key === Macro.PASTE_ESCAPE)
+
     opts.mac ??= VIM.isMac
     const result = VIM.Motion.feedkey(Vim._keyToString(key), opts)
 
@@ -79,18 +79,15 @@ export default class Vim {
       Macro.record(key, opts, VIM.Macro.status.register)
     }
 
-    if (VIM.Macro.status.playbackStatus === PlaybackStatus.PLAYING) {
-      console.log('KEY', key)
-      if (this.pasteEscape) {
-        console.log('PASTING')
-        DocsInteractions.pasteText({ text: key })
-        this.pasteEscape = false
-      }
+    if (this.pasteEscape) {
+      console.log('PASTING')
+      DocsInteractions.pasteText({ text: key })
+      this.pasteEscape = false
+    }
 
-      if (key === Macro.PASTE_ESCAPE) {
-        console.log('paste escape', key)
-        this.pasteEscape = true
-      }
+    if (key === Macro.PASTE_ESCAPE) {
+      console.log('paste escape', key)
+      this.pasteEscape = true
     }
 
     if (this._mode === VimMode.INSERT) {

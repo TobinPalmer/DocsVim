@@ -44,10 +44,8 @@ export default class Macro {
         }
         const { key, opts } = keys[count]
         if (isFunction(key)) {
-          console.log('FUNCTION', key)
           key(opts)
         } else {
-          console.log('KEY', key)
           VIM.Vim.keydown(key, opts)
         }
         count++
