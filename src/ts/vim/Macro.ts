@@ -27,25 +27,86 @@ export default class Macro {
     VIM.VimBuffer.setMacroMap({ key, opts, register })
   }
 
+  // public static runMacro({ keys, repeat = 1 }: { keys: LAST_COMMAND_KEYS[]; repeat?: number }) {
+  //   const isFunction = (x: unknown): x is (options: KeyboardOpts) => void => typeof x === 'function'
+  //
+  //   const replayMacro = (number: number, idx = 0) => {
+  //     const REPEAT_DELAY = 10
+  //     const REPEAT_LIMIT = 150
+  //
+  //     if (number === 0 || number > REPEAT_LIMIT) {
+  //       VIM.Macro.status.playbackStatus = PlaybackStatus.STOPPED
+  //       return
+  //     }
+  //
+  //     console.table(keys)
+  //
+  //     if (idx >= keys.length) {
+  //       replayMacro(number - 1)
+  //     } else {
+  //       const { key, opts } = keys[idx]
+  //       if (isFunction(key)) {
+  //         key(opts)
+  //       } else {
+  //         VIM.Vim.keydown(key, opts)
+  //       }
+  //
+  //       setTimeout(() => replayMacro(number, idx + 1), REPEAT_DELAY)
+  //     }
+  //   }
+  //
+  //   replayMacro(repeat + 1)
+  // }
+
+  // public static runMacro({ keys, repeat = 1 }: { keys: LAST_COMMAND_KEYS[]; repeat?: number }) {
+  //   const isFunction = (x: unknown): x is (options: KeyboardOpts) => void => typeof x === 'function'
+  //
+  //   for (let i = 0; i < (repeat ?? 1); i++) {
+  //     let count = 0
+  //     setInterval(() => {
+  //       if (count === keys.length) {
+  //         VIM.Macro.status.playbackStatus = PlaybackStatus.STOPPED
+  //         return
+  //       }
+  //       const { key, opts } = keys[count]
+  //       if (isFunction(key)) {
+  //         key(opts)
+  //       } else {
+  //         VIM.Vim.keydown(key, opts)
+  //       }
+  //       count++
+  //     })
+  //   }
+  // }
+
   public static runMacro({ keys, repeat = 1 }: { keys: LAST_COMMAND_KEYS[]; repeat?: number }) {
     const isFunction = (x: unknown): x is (options: KeyboardOpts) => void => typeof x === 'function'
 
-    for (let i = 0; i < (repeat ?? 1); i++) {
-      let count = 0
-      setInterval(() => {
-        if (count === keys.length) {
-          VIM.Macro.status.playbackStatus = PlaybackStatus.STOPPED
-          return
+    const playbackInterval = 0
+    const repeatDelay = 0
+
+    let count = 0
+    const intervalId = setInterval(() => {
+      const { key, opts } = keys[count]
+      if (isFunction(key)) {
+        key(opts)
+      } else {
+        VIM.Vim.keydown(key, opts)
+      }
+      count++
+
+      if (count === keys.length) {
+        clearInterval(intervalId)
+        VIM.Macro.status.playbackStatus = PlaybackStatus.STOPPED
+
+        // Repeat the macro if necessary
+        if (repeat > 1) {
+          setTimeout(() => {
+            Macro.runMacro({ keys, repeat: repeat - 1 })
+          }, repeatDelay)
         }
-        const { key, opts } = keys[count]
-        if (isFunction(key)) {
-          key(opts)
-        } else {
-          VIM.Vim.keydown(key, opts)
-        }
-        count++
-      })
-    }
+      }
+    }, playbackInterval)
   }
 
   public static clearMacro(register: string) {
@@ -70,7 +131,6 @@ export default class Macro {
           keys.splice(insertPosition, 0, { key: Macro.PASTE_ESCAPE, opts: {} })
           keys[insertPosition + 1].key = this.cleanText(temp)
 
-          // eslint-disable-next-line no-magic-numbers
           keys.splice(insertPosition + 2, i - insertPosition)
 
           i = insertPosition + 1
@@ -89,7 +149,6 @@ export default class Macro {
     if (flag && temp !== '' && insertPosition !== null) {
       keys.splice(insertPosition, 0, { key: Macro.PASTE_ESCAPE, opts: {} })
       keys[insertPosition + 1].key = this.cleanText(temp)
-      // eslint-disable-next-line no-magic-numbers
       keys.splice(insertPosition + 2)
     }
 

@@ -34,7 +34,6 @@ export default class Vim {
       case VimMode.VISUAL:
       case VimMode.VISUAL_LINE:
         DocsInteractions.setCursorWidth({
-          // eslint-disable-next-line no-magic-numbers
           width: DocsInteractions.getFontSize() / 2,
         })
         break
@@ -78,11 +77,13 @@ export default class Vim {
     }
 
     if (this.pasteEscape) {
+      console.log('PASTE ESCAPE', key)
       DocsInteractions.pasteText({ text: key })
       this.pasteEscape = false
     }
 
     if (key === Macro.PASTE_ESCAPE) {
+      console.log('KEY === Macro.PASTE_ESCAPE', key)
       this.pasteEscape = true
     }
 

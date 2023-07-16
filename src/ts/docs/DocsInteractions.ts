@@ -82,8 +82,8 @@ export default class DocsInteractions {
     const DELAY = 0
     setTimeout(() => {
       const currentFontSize = this.getFontSize()
-      // eslint-disable-next-line no-magic-numbers
-      this.setCursorWidth({ width: currentFontSize / 2 })
+      const CURSOR_WIDTH = currentFontSize / 2
+      this.setCursorWidth({ width: CURSOR_WIDTH })
     }, DELAY)
   }
 

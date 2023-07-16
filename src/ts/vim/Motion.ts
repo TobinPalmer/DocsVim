@@ -46,7 +46,7 @@ export default class Motion {
   }
 
   /** Feed a key to the Motion class */
-  // eslint-disable-next-line complexity, max-lines-per-function, max-statements
+  // eslint-disable-next-line complexity,max-statements
   public feedkey(originalKey: keyof Keys, opts: KeyboardOpts = {}): boolean {
     if (originalKey === ':') {
       VIM.Vim.mode = VimMode.COMMAND

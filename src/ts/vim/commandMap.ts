@@ -168,7 +168,7 @@ export const COMMAND_MAP = Object.freeze({
         const macro = Macro.getMacroText(VIM.VimBuffer.getMacroMap().get(afterKey.key) || [])
 
         VIM.Macro.status = { playbackStatus: PlaybackStatus.PLAYING, register: afterKey.key }
-        Macro.runMacro({ keys: macro })
+        Macro.runMacro({ keys: macro, repeat: opts.repeat ?? 1 })
         return
       }
 
@@ -321,10 +321,11 @@ export const COMMAND_MAP = Object.freeze({
           params: { key: 'ArrowRight', opts: { ctrlKey: true } },
         })
       }
+
+      const COMMAND_QUEUE_DELAY = 15
       setTimeout(() => {
         VIM.Vim.mode = VimMode.INSERT
-        // eslint-disable-next-line no-magic-numbers
-      }, 15)
+      }, COMMAND_QUEUE_DELAY)
     },
     $(opts: KeyboardCommand = {}) {
       VIM.CommandQueue.add({
@@ -726,7 +727,6 @@ export const COMMAND_MAP = Object.freeze({
         },
       },
       y() {
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
         DocsInteractions.copyCurrentLine({ fullLine: true })
       },
     },

@@ -52,8 +52,8 @@ export default class Register {
         let content: ClipboardContent = '' as ClipboardContent
 
         // HACK: We need to wait for the clipboard to be ready
-        // eslint-disable-next-line no-magic-numbers
-        await new Promise((resolve) => setTimeout(resolve, 50))
+        const RESOLVE_TIME = 50
+        await new Promise((resolve) => setTimeout(resolve, RESOLVE_TIME))
 
         content = ((await navigator.clipboard.readText()) ?? '') as ClipboardContent
 
