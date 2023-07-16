@@ -84,8 +84,6 @@ export default class CommandQueue {
       DocsInteractions.correctCursorSize()
     }
 
-    // console.log('Run', nextCommand.params)
-
     VIM.VimBuffer.addToBuffer({
       buffer: SpecialRegisters.LAST_COMMAND,
       value: { func: nextCommand.func, params: nextCommand.params, repeat: nextCommand.params.repeat ?? 1 },

@@ -28,12 +28,7 @@ export default class Macro {
   }
 
   public static runMacro({ keys, repeat = 1 }: { keys: LAST_COMMAND_KEYS[]; repeat?: number }) {
-    console.log('CALLING RUNMACRO', repeat, VIM.Macro.status.playbackStatus)
-    console.log('ONLY', VIM.Macro.status)
-    console.table(keys)
     const isFunction = (x: unknown): x is (options: KeyboardOpts) => void => typeof x === 'function'
-
-    console.log(this.getMacroText(keys))
 
     for (let i = 0; i < (repeat ?? 1); i++) {
       let count = 0
@@ -51,7 +46,6 @@ export default class Macro {
         count++
       })
     }
-    console.log('ONLY', VIM.Macro.status)
   }
 
   public static clearMacro(register: string) {

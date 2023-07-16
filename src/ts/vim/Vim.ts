@@ -70,8 +70,6 @@ export default class Vim {
    * @param opts the options to pass to the keydown event
    */
   public keydown(key: string, opts: KeyboardOpts = {}): boolean {
-    console.log('INVOKING KEYDOWN PASTE ESCAPE STATUS', key === Macro.PASTE_ESCAPE)
-
     opts.mac ??= VIM.isMac
     const result = VIM.Motion.feedkey(Vim._keyToString(key), opts)
 
@@ -80,13 +78,11 @@ export default class Vim {
     }
 
     if (this.pasteEscape) {
-      console.log('PASTING')
       DocsInteractions.pasteText({ text: key })
       this.pasteEscape = false
     }
 
     if (key === Macro.PASTE_ESCAPE) {
-      console.log('paste escape', key)
       this.pasteEscape = true
     }
 

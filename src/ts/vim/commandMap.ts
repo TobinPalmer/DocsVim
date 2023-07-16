@@ -146,21 +146,17 @@ export const COMMAND_MAP = Object.freeze({
     // eslint-disable-next-line consistent-return
     q(opts: KeyboardCommand = {}) {
       if (VIM.Macro.status.playbackStatus === PlaybackStatus.STOPPED && !opts.afterKeys) {
-        console.log('Returning')
         return { code: VimBreakCodes.macro_register, required: 1 }
       }
 
       if (VIM.Macro.status.playbackStatus === PlaybackStatus.RECORDING) {
         VIM.Macro.status = { playbackStatus: PlaybackStatus.STOPPED, register: '' }
-        console.log('Stopping macro')
-        console.log(VIM.VimBuffer.getMacroMap())
       }
 
       if (opts.afterKeys && VIM.Macro.status.playbackStatus === PlaybackStatus.STOPPED) {
         const [afterKey] = opts.afterKeys
-        console.log(`Recording macro @${afterKey.key}`)
-        // Wait to set status so that the key is not recorded
         Macro.clearMacro(afterKey.key)
+        // Wait to set status so that the key is not recorded
         setTimeout(() => {
           VIM.Macro.status = { playbackStatus: PlaybackStatus.RECORDING, register: afterKey.key }
         })
@@ -170,8 +166,6 @@ export const COMMAND_MAP = Object.freeze({
       if (opts.afterKeys) {
         const [afterKey] = opts.afterKeys
         const macro = Macro.getMacroText(VIM.VimBuffer.getMacroMap().get(afterKey.key) || [])
-
-        console.log(`Running macro @${afterKey.key}`)
 
         VIM.Macro.status = { playbackStatus: PlaybackStatus.PLAYING, register: afterKey.key }
         Macro.runMacro({ keys: macro })
